@@ -1,4 +1,4 @@
-map <leader>llc :lclose
+map <leader>llc :lclose<cr>
 
 "Note: This option must be set in .vimrc(_vimrc).  NOT IN .gvimrc(_gvimrc)!
 " Disable AutoComplPop.
