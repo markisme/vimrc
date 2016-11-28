@@ -12,6 +12,7 @@ let s:_DEFAULT_CHECKERS = {
         \ 'apiblueprint':  ['drafter'],
         \ 'applescript':   ['osacompile'],
         \ 'asciidoc':      ['asciidoc'],
+        \ 'asl':           ['iasl'],
         \ 'asm':           ['gcc'],
         \ 'bro':           ['bro'],
         \ 'bemhtml':       ['bemhtmllint'],
@@ -84,6 +85,7 @@ let s:_DEFAULT_CHECKERS = {
         \ 'slim':          ['slimrb'],
         \ 'sml':           ['smlnj'],
         \ 'spec':          ['rpmlint'],
+        \ 'solidity':      ['solc'],
         \ 'sql':           ['sqlint'],
         \ 'stylus':        ['stylint'],
         \ 'tcl':           ['nagelfar'],
@@ -93,7 +95,7 @@ let s:_DEFAULT_CHECKERS = {
         \ 'trig':          ['rapper'],
         \ 'turtle':        ['rapper'],
         \ 'twig':          ['twiglint'],
-        \ 'typescript':    ['tsc'],
+        \ 'typescript':    [],
         \ 'vala':          ['valac'],
         \ 'verilog':       ['verilator'],
         \ 'vhdl':          ['ghdl'],
@@ -337,7 +339,10 @@ endfunction " }}}2
 
 " Check for obsolete variable g:syntastic_<filetype>_checker
 function! g:SyntasticRegistry._checkDeprecation(filetype) abort " {{{2
-    if exists('g:syntastic_' . a:filetype . '_checker') && !exists('g:syntastic_' . a:filetype . '_checkers')
+    if exists('g:syntastic_' . a:filetype . '_checker') &&
+        \ !exists('g:syntastic_' . a:filetype . '_checkers') &&
+        \ type(g:syntastic_{a:filetype}_checker) == type('')
+
         let g:syntastic_{a:filetype}_checkers = [g:syntastic_{a:filetype}_checker]
         call syntastic#log#oneTimeWarn('variable g:syntastic_' . a:filetype . '_checker is deprecated')
     endif

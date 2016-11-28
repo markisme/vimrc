@@ -18,8 +18,9 @@ function! go#cmd#Build(bang, ...)
   let goargs = map(copy(a:000), "expand(v:val)")
 
   " escape all shell arguments before we pass it to make
-  let goargs = go#util#Shelllist(goargs, 1)
-
+  if !has('nvim')
+    let goargs = go#util#Shelllist(goargs, 1)
+  endif
   " create our command arguments. go build discards any results when it
   " compiles multiple packages. So we pass the `errors` package just as an
   " placeholder with the current folder (indicated with '.')
@@ -143,6 +144,8 @@ endfunction
 " is given(which are passed directly to 'go install') it tries to install those
 " packages. Errors are populated in the location window.
 function! go#cmd#Install(bang, ...)
+  let old_gopath = $GOPATH
+  let $GOPATH = go#path#Detect()
   let default_makeprg = &makeprg
 
   " :make expands '%' and '#' wildcards, so they must also be escaped
@@ -179,6 +182,7 @@ function! go#cmd#Install(bang, ...)
     redraws! | echon "vim-go: " | echohl Function | echon "installed to ". $GOPATH | echohl None
   endif
 
+  let $GOPATH = old_gopath
   let &makeprg = default_makeprg
 endfunction
 

@@ -131,6 +131,12 @@ set novisualbell
 set t_vb=
 set tm=500
 
+" Properly disable sound on errors on MacVim
+if has("gui_macvim")
+    autocmd GUIEnter * set vb t_vb=
+endif
+
+
 " Add a bit extra margin to the left
 set foldcolumn=1
 
@@ -140,6 +146,11 @@ set foldcolumn=1
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Enable syntax highlighting
 syntax enable 
+
+" Enable 256 colors palette in Gnome Terminal
+if $COLORTERM == 'gnome-terminal'
+    set t_Co=256
+endif
 
 try
     colorscheme desert
