@@ -30,7 +30,10 @@ else
   command! -nargs=+ HtmlHiLink hi def link <args>
 endif
 
-syn spell toplevel
+if !exists('g:markdown_minlines')
+  let g:markdown_minlines = 50
+endif
+execute 'syn sync minlines=' . g:markdown_minlines
 syn case ignore
 syn sync linebreaks=1
 

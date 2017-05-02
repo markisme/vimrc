@@ -256,11 +256,44 @@ function s:coverage_job(args)
   " autowrite is not enabled for jobs
   call go#cmd#autowrite()
 
-  let disabled_term = 0
-  if go#config#TermEnabled()
-    let disabled_term = 1
-    call go#config#SetTermEnabled(0)
-  endif
+  let status_dir =  expand('%:p:h')
+  function! s:error_info_cb(job, exit_status, data) closure
+    let status = {
+          \ 'desc': 'last status',
+          \ 'type': "coverage",
+          \ 'state': "finished",
+          \ }
+
+    if a:exit_status
+      let status.state = "failed"
+    endif
+
+    call go#statusline#Update(status_dir, status)
+  endfunction
+
+  let a:args.error_info_cb = funcref('s:error_info_cb')
+  let callbacks = go#job#Spawn(a:args)
+
+  let start_options = {
+        \ 'callback': callbacks.callback,
+        \ 'exit_cb': callbacks.exit_cb,
+        \ }
+
+  " modify GOPATH if needed
+  let old_gopath = $GOPATH
+  let $GOPATH = go#path#Detect()
+
+  " pre start
+  let dir = getcwd()
+  let cd = exists('*haslocaldir') && haslocaldir() ? 'lcd ' : 'cd '
+  let jobdir = fnameescape(expand("%:p:h"))
+  execute cd . jobdir
+
+  call go#statusline#Update(status_dir, {
+        \ 'desc': "current status",
+        \ 'type': "coverage",
+        \ 'state': "started",
+        \})
 
   call go#job#Spawn(a:args.cmd, a:args)
 

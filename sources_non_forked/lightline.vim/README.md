@@ -57,7 +57,7 @@ landscape is my colorscheme, which is a high-contrast cterm-supported colorschem
 
         git clone https://github.com/itchyny/lightline.vim ~/.vim/bundle/lightline.vim
 
-### [Vundle](https://github.com/VundleVim/Vundle.vim)
+### Vundle (https://github.com/VundleVim/Vundle.vim)
 1. Add the following configuration to your `.vimrc`.
 
         Plugin 'itchyny/lightline.vim'

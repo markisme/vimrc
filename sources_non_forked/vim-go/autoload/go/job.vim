@@ -177,49 +177,29 @@ function! go#job#Options(args)
     let self.exit_status = a:exitval
     let self.exited = 1
 
-    call self.show_status(a:job, a:exitval)
-
-    if self.closed || has('nvim')
-      call self.complete(a:job, self.exit_status, self.messages)
-    endif
-  endfunction
-  " explicitly bind exit_cb to state so that within it, self will always refer
-  " to state. See :help Partial for more information.
-  let cbs.exit_cb = function('s:exit_cb', [], state)
-
-  function! s:close_cb(ch) dict
-    let self.closed = 1
-
-    if self.exited
-      let job = ch_getjob(a:ch)
-      call self.complete(job, self.exit_status, self.messages)
+  function cbs.exit_cb(job, exitval) dict
+    if has_key(self, 'custom_cb')
+      call self.custom_cb(a:job, a:exitval, self.messages)
     endif
   endfunction
   " explicitly bind close_cb to state so that within it, self will
   " always refer to state. See :help Partial for more information.
   let cbs.close_cb = function('s:close_cb', [], state)
 
-  function state.show_errors(job, exit_status, data)
-    if self.for == '_'
-      return
+    if has_key(self, 'error_info_cb')
+      call self.error_info_cb(a:job, a:exitval, self.messages)
     endif
 
-    let l:winid = win_getid(winnr())
-    " Always set the active window to the window that was active when the job
-    " was started. Among other things, this makes sure that the correct
-    " window's location list will be populated when the list type is
-    " 'location' and the user has moved windows since starting the job.
-    call win_gotoid(self.winid)
-
-    let l:listtype = go#list#Type(self.for)
-    if a:exit_status == 0
-      call go#list#Clean(l:listtype)
-      call win_gotoid(l:winid)
-      return
+    if get(g:, 'go_echo_command_info', 1)
+      if a:exitval == 0
+        call go#util#EchoSuccess("SUCCESS")
+      else
+        call go#util#EchoError("FAILED")
+      endif
     endif
 
-    let l:listtype = go#list#Type(self.for)
-    if len(a:data) == 0
+    let l:listtype = go#list#Type("quickfix")
+    if a:exitval == 0
       call go#list#Clean(l:listtype)
       call win_gotoid(l:winid)
       return
@@ -280,10 +260,9 @@ function! go#job#Start(cmd, options)
     return
   endif
 
-  if !has_key(l:options, 'cwd')
-    " pre start
-    let dir = getcwd()
-    execute l:cd fnameescape(filedir)
+  " override exit callback handler if user provided it
+  if has_key(a:args, 'exit_cb')
+    let cbs.exit_cb = a:args.exit_cb
   endif
 
   if has_key(l:options, '_start')

@@ -40,10 +40,32 @@ function! go#rename#Rename(bang, ...) abort
 endfunction
 
 function s:rename_job(args)
-  let l:job_opts = {
-        \ 'bang': a:args.bang,
-        \ 'for': 'GoRename',
-        \ 'statustype': 'gorename',
+  let messages = []
+  function! s:callback(chan, msg) closure
+    call add(messages, a:msg)
+  endfunction
+
+  let status_dir =  expand('%:p:h')
+
+  function! s:exit_cb(job, exitval) closure
+    let status = {
+          \ 'desc': 'last status',
+          \ 'type': "gorename",
+          \ 'state': "finished",
+          \ }
+
+    if a:exitval
+      let status.state = "failed"
+    endif
+
+    call go#statusline#Update(status_dir, status)
+
+    call s:parse_errors(a:exitval, a:args.bang, messages)
+  endfunction
+
+  let start_options = {
+        \ 'callback': funcref("s:callback"),
+        \ 'exit_cb': funcref("s:exit_cb"),
         \ }
 
   " autowrite is not enabled for jobs

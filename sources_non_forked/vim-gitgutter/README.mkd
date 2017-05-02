@@ -203,6 +203,33 @@ Finally, you can force vim-gitgutter to update its signs across all visible buff
 See the customisation section below for how to change the defaults.
 
 
+### When are the signs updated?
+
+By default the signs are updated as follows:
+
+| Event                     | Reason for update                    | Configuration          |
+|---------------------------|--------------------------------------|------------------------|
+| Stop typing               | So the signs are real time           | `g:gitgutter_realtime` |
+| Switch buffer             | To notice change to git index        | `g:gitgutter_eager`    |
+| Switch tab                | To notice change to git index        | `g:gitgutter_eager`    |
+| Focus the GUI             | To notice change to git index        | `g:gitgutter_eager` (not gVim on Windows) |
+| After shell command       | To notice change to git index        | `g:gitgutter_eager`    |
+| Read a file into a buffer | To display initial signs             | [always]               |
+| Save a buffer             | So non-realtime signs are up to date | [always]               |
+| Change a file outside Vim | To notice `git stash`                | [always]               |
+
+The length of time Vim waits after you stop typing before it triggers the plugin is governed by the setting `updatetime`.  This defaults to `4000` milliseconds which is rather too long.  I recommend around `250` milliseconds but it depends on your system and your preferences.  Note that in terminal Vim pre-7.4.427 an `updatetime` of less than approximately `1000` milliseconds can lead to random highlighting glitches; the lower the `updatetime`, the more glitches.
+
+If you experience a lag, you can trade speed for accuracy:
+
+```viml
+let g:gitgutter_realtime = 0
+let g:gitgutter_eager = 0
+```
+
+Note the realtime updating requires Vim 7.3.105 or higher.
+
+
 ### Customisation
 
 You can customise:
@@ -331,7 +358,7 @@ If you use an alternative to grep, you can tell vim-gitgutter to use it here.
 
 ```viml
 " Default:
-let g:gitgutter_grep = 'grep'
+let g:gitgutter_grep_command = 'grep'
 ```
 
 #### To turn off vim-gitgutter by default
@@ -522,7 +549,11 @@ Here are some things you can check:
 
 #### When signs don't update after focusing Vim
 
-* Your terminal probably isn't reporting focus events.  Either try installing [Terminus][] or set `let g:gitgutter_terminal_reports_focus=0`.
+* `:echo system("git --version")` succeeds.
+* Your git config is compatible with the version of git returned by the command above.
+* Your Vim supports signs (`:echo has('signs')` should give `1`).
+* Your file is being tracked by git and has unstaged changes.
+* If you have aliased or configured `grep` to use any flags, add `let g:gitgutter_grep_command = 'grep'` to your `~/.vimrc`.
 
 
 ### Shameless Plug

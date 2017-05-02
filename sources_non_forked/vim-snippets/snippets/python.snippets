@@ -170,10 +170,12 @@ snippet iem
 	__import__('IPython').embed()
 # remote python debugger (rpdb)
 snippet rpdb
-	__import__('rpdb').set_trace()
+	import rpdb
+	rpdb.set_trace()
 # web python debugger (wdb)
 snippet wdb
-	__import__('wdb').set_trace()
+	import wdb
+	wdb.set_trace()
 # ptpython
 snippet ptpython
 	__import__('ptpython.repl', fromlist=('repl')).embed(globals(), locals(), vi_mode=${1:False}, history_filename=${2:None})

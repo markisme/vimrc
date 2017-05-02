@@ -439,10 +439,7 @@ them to existing highlight groups with, say:
 To change the line highlights, set up the following highlight groups in your
 colorscheme or |vimrc|:
 >
-    GitGutterAddLine          " default: links to DiffAdd
-    GitGutterChangeLine       " default: links to DiffChange
-    GitGutterDeleteLine       " default: links to DiffDelete
-    GitGutterChangeDeleteLine " default: links to GitGutterChangeLineDefault
+  let g:gitgutter_grep_command = 'grep'
 <
 
 

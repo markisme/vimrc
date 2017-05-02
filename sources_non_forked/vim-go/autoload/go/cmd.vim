@@ -279,7 +279,68 @@ function! s:cmd_job(args) abort
   " autowrite is not enabled for jobs
   call go#cmd#autowrite()
 
-  call go#job#Spawn(a:args.cmd, a:args)
+  function! s:error_info_cb(job, exit_status, data) closure abort
+    let status = {
+          \ 'desc': 'last status',
+          \ 'type': a:args.cmd[1],
+          \ 'state': "success",
+          \ }
+
+    if a:exit_status
+      let status.state = "failed"
+    endif
+
+    let elapsed_time = reltimestr(reltime(started_at))
+    " strip whitespace
+    let elapsed_time = substitute(elapsed_time, '^\s*\(.\{-}\)\s*$', '\1', '')
+    let status.state .= printf(" (%ss)", elapsed_time)
+
+    call go#statusline#Update(status_dir, status)
+  endfunction
+
+  let a:args.error_info_cb = funcref('s:error_info_cb')
+  let callbacks = go#job#Spawn(a:args)
+
+  let start_options = {
+        \ 'callback': callbacks.callback,
+        \ 'exit_cb': callbacks.exit_cb,
+        \ }
+
+  " modify GOPATH if needed
+  let old_gopath = $GOPATH
+  let $GOPATH = go#path#Detect()
+
+  " pre start
+  let dir = getcwd()
+  let cd = exists('*haslocaldir') && haslocaldir() ? 'lcd ' : 'cd '
+  let jobdir = fnameescape(expand("%:p:h"))
+  execute cd . jobdir
+
+  call job_start(a:args.cmd, start_options)
+
+  " post start
+  execute cd . fnameescape(dir)
+  let $GOPATH = old_gopath
+endfunction
+
+
+" test_compile is called when a GoTestCompile call is finished
+function! s:test_compile(test_file, job, exit_status, data) abort
+  call delete(a:test_file)
+endfunction
+
+" -----------------------
+" | Neovim job handlers |
+" -----------------------
+let s:test_compile_handlers = {}
+
+function! s:test_compile_handler(job, exit_status, data) abort
+  if !has_key(s:test_compile_handlers, a:job.id)
+    return
+  endif
+  let l:compile_file = s:test_compile_handlers[a:job.id]
+  call delete(l:compile_file)
+  unlet s:test_compile_handlers[a:job.id]
 endfunction
 
 " vim: sw=2 ts=2 et

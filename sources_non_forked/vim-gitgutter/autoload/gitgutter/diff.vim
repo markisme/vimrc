@@ -1,5 +1,15 @@
-let s:nomodeline = (v:version > 703 || (v:version == 703 && has('patch442'))) ? '<nomodeline>' : ''
-
+if exists('g:gitgutter_grep_command')
+  let s:grep_available = 1
+  let s:grep_command = g:gitgutter_grep_command
+else
+  let s:grep_available = executable('grep')
+  if s:grep_available
+    let s:grep_command = 'grep'
+    if $GREP_OPTIONS =~# '--color=always'
+      let s:grep_command .= ' --color=never'
+    endif
+  endif
+endif
 let s:hunk_re = '^@@ -\(\d\+\),\?\(\d*\) +\(\d\+\),\?\(\d*\) @@'
 
 " True for git v1.7.2+.

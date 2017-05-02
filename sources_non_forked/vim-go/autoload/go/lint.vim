@@ -1,3 +1,27 @@
+if !exists("g:go_metalinter_command")
+  let g:go_metalinter_command = ""
+endif
+
+if !exists("g:go_metalinter_autosave_enabled")
+  let g:go_metalinter_autosave_enabled = ['vet', 'golint']
+endif
+
+if !exists("g:go_metalinter_enabled")
+  let g:go_metalinter_enabled = ['vet', 'golint', 'errcheck']
+endif
+
+if !exists("g:go_metalinter_excludes")
+  let g:go_metalinter_excludes = []
+endif
+
+if !exists("g:go_golint_bin")
+  let g:go_golint_bin = "golint"
+endif
+
+if !exists("g:go_errcheck_bin")
+  let g:go_errcheck_bin = "errcheck"
+endif
+
 function! go#lint#Gometa(autosave, ...) abort
   if a:0 == 0
     let goargs = [expand('%:p:h')]
@@ -20,16 +44,12 @@ function! go#lint#Gometa(autosave, ...) abort
       let cmd += ["--enable=".linter]
     endfor
 
-    for linter in go#config#MetalinterDisabled()
-      let cmd += ["--disable=".linter]
+    for exclude in g:go_metalinter_excludes
+      let cmd += ["--exclude=".exclude]
     endfor
 
-    " gometalinter has a --tests flag to tell its linters whether to run
-    " against tests. While not all of its linters respect this flag, for those
-    " that do, it means if we don't pass --tests, the linter won't run against
-    " test files. One example of a linter that will not run against tests if
-    " we do not specify this flag is errcheck.
-    let cmd += ["--tests"]
+    " path
+    let cmd += [expand('%:p:h')]
   else
     " the user wants something else, let us use it.
     let cmd += split(go#config#MetalinterCommand(), " ")
@@ -210,7 +230,66 @@ function! s:lint_job(args, autosave)
   " autowrite is not enabled for jobs
   call go#cmd#autowrite()
 
-  call go#job#Spawn(a:args.cmd, l:opts)
+  let l:listtype = go#list#Type("quickfix")
+  let l:errformat = '%f:%l:%c:%t%*[^:]:\ %m,%f:%l::%t%*[^:]:\ %m'
+
+  function! s:callback(chan, msg) closure
+    let old_errorformat = &errorformat
+    let &errorformat = l:errformat
+    caddexpr a:msg
+    let &errorformat = old_errorformat
+
+    " TODO(arslan): cursor still jumps to first error even If I don't want
+    " it. Seems like there is a regression somewhere, but not sure where.
+    copen
+  endfunction
+
+  function! s:exit_cb(job, exitval) closure
+    let status = {
+          \ 'desc': 'last status',
+          \ 'type': "gometaliner",
+          \ 'state': "finished",
+          \ }
+
+    if a:exitval
+      let status.state = "failed"
+    endif
+
+    let elapsed_time = reltimestr(reltime(started_at))
+    " strip whitespace
+    let elapsed_time = substitute(elapsed_time, '^\s*\(.\{-}\)\s*$', '\1', '')
+    let status.state .= printf(" (%ss)", elapsed_time)
+
+    call go#statusline#Update(status_dir, status)
+
+    let errors = go#list#Get(l:listtype)
+    if empty(errors)
+      call go#list#Window(l:listtype, len(errors))
+    elseif has("patch-7.4.2200")
+      if l:listtype == 'quickfix'
+        call setqflist([], 'a', {'title': 'GoMetaLinter'})
+      else
+        call setloclist(0, [], 'a', {'title': 'GoMetaLinter'})
+      endif
+    endif
+
+    if get(g:, 'go_echo_command_info', 1)
+      call go#util#EchoSuccess("linting finished")
+    endif
+  endfunction
+
+  let start_options = {
+        \ 'callback': funcref("s:callback"),
+        \ 'exit_cb': funcref("s:exit_cb"),
+        \ }
+
+  call job_start(a:args.cmd, start_options)
+
+  call go#list#Clean(l:listtype)
+
+  if get(g:, 'go_echo_command_info', 1)
+    call go#util#EchoProgress("linting started ...")
+  endif
 endfunction
 
 " vim: sw=2 ts=2 et

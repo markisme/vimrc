@@ -119,19 +119,42 @@ function! s:async_guru(args) abort
         \ 'parse' : get(a:args, 'custom_parse', funcref("s:parse_guru_output"))
       \ }
 
-  function! s:complete(job, exit_status, messages) dict abort
-    let output = join(a:messages, "\n")
-    call self.parse(a:exit_status, output, self.mode)
-  endfunction
-  " explicitly bind complete to state so that within it, self will
-  " always refer to state. See :help Partial for more information.
-  let state.complete = function('s:complete', [], state)
+  if !has_key(a:args, 'disable_progress')
+    if a:args.needs_scope
+      call go#util#EchoProgress("analysing with scope ". result.scope . " ...")
+    endif
+  endif
 
-  let opts = {
-        \ 'statustype': get(a:args, 'statustype', a:args.mode),
-        \ 'for': '_',
-        \ 'errorformat': "%f:%l.%c-%[%^:]%#:\ %m,%f:%l:%c:\ %m",
-        \ 'complete': state.complete,
+  let messages = []
+  function! s:callback(chan, msg) closure
+    call add(messages, a:msg)
+  endfunction
+
+  function! s:exit_cb(job, exitval) closure
+    let out = join(messages, "\n")
+
+    let status = {
+          \ 'desc': 'last status',
+          \ 'type': statusline_type,
+          \ 'state': "finished",
+          \ }
+
+    if a:exitval
+      let status.state = "failed"
+    endif
+
+    call go#statusline#Update(status_dir, status)
+
+    if has_key(a:args, 'custom_parse')
+      call a:args.custom_parse(a:exitval, out)
+    else
+      call s:parse_guru_output(a:exitval, out, a:args.mode)
+    endif
+  endfunction
+
+  let start_options = {
+        \ 'callback': funcref("s:callback"),
+        \ 'exit_cb': funcref("s:exit_cb"),
         \ }
 
   if has_key(a:args, 'disable_progress')

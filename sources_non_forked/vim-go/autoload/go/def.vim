@@ -299,13 +299,10 @@ function s:def_job(args, state) abort
   endfunction
   let l:start_options.exit_cb = funcref('s:exit_cb', [l:start_options.exit_cb], l:state)
 
-  function! s:close_cb(next, ch) dict
-    call call(a:next, [a:ch])
-    if has_key(self, 'winid')
-      call win_gotoid(self.winid)
-    endif
-  endfunction
-  let l:start_options.close_cb = funcref('s:close_cb', [l:start_options.close_cb], l:state)
+  let start_options = {
+        \ 'callback': callbacks.callback,
+        \ 'exit_cb': callbacks.exit_cb,
+        \ }
 
   if &modified
     let l:tmpname = tempname()
