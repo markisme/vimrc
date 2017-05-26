@@ -40,27 +40,24 @@ endfunction
 call s:checkVersion()
 
 " these packages are used by vim-go and can be automatically installed if
-" needed by the user with GoInstallBinaries.
-let s:packages = {
-      \ 'asmfmt':        ['github.com/klauspost/asmfmt/cmd/asmfmt'],
-      \ 'dlv':           ['github.com/derekparker/delve/cmd/dlv'],
-      \ 'errcheck':      ['github.com/kisielk/errcheck'],
-      \ 'fillstruct':    ['github.com/davidrjenni/reftools/cmd/fillstruct'],
-      \ 'gocode':        ['github.com/mdempsky/gocode', {'windows': ['-ldflags', '-H=windowsgui']}],
-      \ 'godef':         ['github.com/rogpeppe/godef'],
-      \ 'gogetdoc':      ['github.com/zmb3/gogetdoc'],
-      \ 'goimports':     ['golang.org/x/tools/cmd/goimports'],
-      \ 'golint':        ['github.com/golang/lint/golint'],
-      \ 'gometalinter':  ['github.com/alecthomas/gometalinter'],
-      \ 'gomodifytags':  ['github.com/fatih/gomodifytags'],
-      \ 'gorename':      ['golang.org/x/tools/cmd/gorename'],
-      \ 'gotags':        ['github.com/jstemmer/gotags'],
-      \ 'guru':          ['golang.org/x/tools/cmd/guru'],
-      \ 'impl':          ['github.com/josharian/impl'],
-      \ 'keyify':        ['honnef.co/go/tools/cmd/keyify'],
-      \ 'motion':        ['github.com/fatih/motion'],
-      \ 'iferr':         ['github.com/koron/iferr'],
-\ }
+" needed by the user with GoInstallBinaries
+let s:packages = [
+      \ "github.com/nsf/gocode",
+      \ "github.com/alecthomas/gometalinter",
+      \ "golang.org/x/tools/cmd/goimports",
+      \ "golang.org/x/tools/cmd/guru",
+      \ "golang.org/x/tools/cmd/gorename",
+      \ "github.com/golang/lint/golint",
+      \ "github.com/rogpeppe/godef",
+      \ "github.com/kisielk/errcheck",
+      \ "github.com/jstemmer/gotags",
+      \ "github.com/klauspost/asmfmt/cmd/asmfmt",
+      \ "github.com/fatih/motion",
+      \ "github.com/fatih/gomodifytags",
+      \ "github.com/zmb3/gogetdoc",
+      \ "github.com/josharian/impl",
+      \ "github.com/dominikh/go-tools/cmd/keyify",
+      \ ]
 
 " These commands are available on any filetypes
 command! -nargs=* -complete=customlist,s:complete GoInstallBinaries call s:GoInstallBinaries(-1, <f-args>)

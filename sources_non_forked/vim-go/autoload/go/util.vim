@@ -131,16 +131,18 @@ function! go#util#osarch() abort
   return go#util#env("goos") . '_' . go#util#env("goarch")
 endfunction
 
-" Run a shell command.
-"
-" It will temporary set the shell to /bin/sh for Unix-like systems if possible,
-" so that we always use a standard POSIX-compatible Bourne shell (and not e.g.
-" csh, fish, etc.) See #988 and #1276.
-function! s:system(cmd, ...) abort
+" System runs a shell command. If possible, it will temporary set 
+" the shell to /bin/sh for Unix-like systems providing a Bourne
+" POSIX like environment.
+function! go#util#System(str, ...) abort
   " Preserve original shell and shellredir values
   let l:shell = &shell
   let l:shellredir = &shellredir
 
+  " Use a Bourne POSIX like shell. Some parts of vim-go expect
+  " commands to be executed using bourne semantics #988 and #1276.
+  " Alter shellredir to match bourne. Especially important if login shell
+  " is set to any of the csh or zsh family #1276.
   if !go#util#IsWin() && executable('/bin/sh')
       set shell=/bin/sh shellredir=>%s\ 2>&1
   endif
@@ -287,7 +289,7 @@ endfunction
 " snippetcase converts the given word to given preferred snippet setting type
 " case.
 function! go#util#snippetcase(word) abort
-  let l:snippet_case = go#config#AddtagsTransform()
+  let l:snippet_case = get(g:, 'go_addtags_transform', "snakecase")
   if l:snippet_case == "snakecase"
     return go#util#snakecase(a:word)
   elseif l:snippet_case == "camelcase"
@@ -320,34 +322,11 @@ function! go#util#camelcase(word) abort
   endif
 endfunction
 
-" pascalcase converts a string to 'PascalCase'. e.g. fooBar or foo_bar will
-" become FooBar.
-function! go#util#pascalcase(word) abort
-  let word = go#util#camelcase(a:word)
-  return toupper(word[0]) . word[1:]
-endfunction
-
-" Echo a message to the screen and highlight it with the group in a:hi.
+" TODO(arslan): I couldn't parameterize the highlight types. Check if we can
+" simplify the following functions
 "
-" The message can be a list or string; every line with be :echomsg'd separately.
-function! s:echo(msg, hi)
-  let l:msg = []
-  if type(a:msg) != type([])
-    let l:msg = split(a:msg, "\n")
-  else
-    let l:msg = a:msg
-  endif
-
-  " Tabs display as ^I or <09>, so manually expand them.
-  let l:msg = map(l:msg, 'substitute(v:val, "\t", "        ", "")')
-
-  exe 'echohl ' . a:hi
-  for line in l:msg
-    echom "vim-go: " . line
-  endfor
-  echohl None
-endfunction
-
+" NOTE(arslan): echon doesn't work well with redraw, thus echo doesn't print
+" even though we order it. However echom seems to be work fine.
 function! go#util#EchoSuccess(msg)
   call s:echo(a:msg, 'Function')
 endfunction

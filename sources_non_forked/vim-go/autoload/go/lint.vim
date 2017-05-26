@@ -115,13 +115,13 @@ endfunction
 " the location list
 function! go#lint#Golint(...) abort
   if a:0 == 0
-    let [l:out, l:err] = go#util#Exec([go#config#GolintBin(), go#package#ImportPath()])
+    let out = go#util#System(bin_path)
   else
-    let [l:out, l:err] = go#util#Exec([go#config#GolintBin()] + a:000)
+    let out = go#util#System(bin_path . " " . go#util#Shelljoin(a:000))
   endif
 
-  if empty(l:out)
-    call go#util#EchoSuccess('[lint] PASS')
+  if empty(out)
+    echon "vim-go: " | echohl Function | echon "[lint] PASS" | echohl None
     return
   endif
 
@@ -239,9 +239,13 @@ function! s:lint_job(args, autosave)
     caddexpr a:msg
     let &errorformat = old_errorformat
 
-    " TODO(arslan): cursor still jumps to first error even If I don't want
-    " it. Seems like there is a regression somewhere, but not sure where.
+    " TODO(jinleileiking): give a configure to jump or not
+    let l:winnr = winnr()
+
     copen
+
+    exe l:winnr . "wincmd w"
+
   endfunction
 
   function! s:exit_cb(job, exitval) closure

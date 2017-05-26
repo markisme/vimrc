@@ -99,20 +99,4 @@ command! -nargs=0 GoTemplateAutoCreateToggle call go#template#ToggleAutoCreate()
 " -- keyify
 command! -nargs=0 GoKeyify call go#keyify#Keyify()
 
-" -- fillstruct
-command! -nargs=0 GoFillStruct call go#fillstruct#FillStruct()
-
-" -- debug
-if !exists(':GoDebugStart')
-  command! -nargs=* -complete=customlist,go#package#Complete GoDebugStart call go#debug#Start(0, <f-args>)
-  command! -nargs=* -complete=customlist,go#package#Complete GoDebugTest  call go#debug#Start(1, <f-args>)
-  command! -nargs=? GoDebugBreakpoint call go#debug#Breakpoint(<f-args>)
-endif
-
-" -- issue
-command! -nargs=0 GoReportGitHubIssue call go#issue#New()
-
-" -- iferr
-command! -nargs=0 GoIfErr call go#iferr#Generate()
-
 " vim: sw=2 ts=2 et

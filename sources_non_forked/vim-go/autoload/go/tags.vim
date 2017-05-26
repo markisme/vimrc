@@ -119,17 +119,13 @@ func s:create_cmd(args) abort
   let l:offset = a:args.offset
   let l:mode = a:args.mode
   let l:cmd_args = a:args.cmd_args
-  let l:modifytags_transform = go#config#AddtagsTransform()
+  let l:modifytags_transform = get(g:, 'go_addtags_transform', "snakecase")
 
   " start constructing the command
   let cmd = [bin_path]
   call extend(cmd, ["-format", "json"])
   call extend(cmd, ["-file", a:args.fname])
   call extend(cmd, ["-transform", l:modifytags_transform])
-
-  if has_key(a:args, "modified")
-    call add(cmd, "-modified")
-  endif
 
   if l:offset != 0
     call extend(cmd, ["-offset", l:offset])

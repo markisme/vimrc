@@ -1,20 +1,23 @@
 function! go#keyify#Keyify()
-  " Needs: https://github.com/dominikh/go-tools/pull/272
-  "\ '-tags', go#config#BuildTags(),
-  let l:cmd = ['keyify',
-      \ '-json',
-      \ printf('%s:#%s', fnamemodify(expand('%'), ':p:gs?\\?/?'), go#util#OffsetCursor())]
+  let old_gopath = $GOPATH
+  let $GOPATH = go#path#Detect()
+  let bin_path = go#path#CheckBinPath("keyify")
+  let fname = fnamemodify(expand("%"), ':p:gs?\\?/?')
 
-  let [l:out, l:err] = go#util#Exec(l:cmd)
-  if l:err
-    call go#util#EchoError("non-zero exit code: " . l:out)
+  if empty(bin_path) || !exists('*json_decode')
+    let $GOPATH = old_gopath
     return
   endif
-  silent! let result = json_decode(l:out)
+
+  " Get result of command as json, that contains `start`, `end` and `replacement`
+  let command = printf("%s -json %s:#%s", bin_path, fname, go#util#OffsetCursor())
+  let output = go#util#System(command)
+  silent! let result = json_decode(output)
 
   " We want to output the error message in case the result isn't a JSON
   if type(result) != type({})
-    call go#util#EchoError(s:chomp(l:out))
+    call go#util#EchoError(s:chomp(output))
+    let $GOPATH = old_gopath
     return
   endif
 
@@ -47,10 +50,9 @@ function! go#keyify#Keyify()
 
   call setpos("'<", vis_start)
   call setpos("'>", vis_end)
+  let $GOPATH = old_gopath
 endfunction
 
 function! s:chomp(string)
     return substitute(a:string, '\n\+$', '', '')
 endfunction
-
-" vim: sw=2 ts=2 et
