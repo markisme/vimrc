@@ -5,6 +5,22 @@
 " fmt.vim: Vim command to format Go files with gofmt (and gofmt compatible
 " toorls, such as goimports).
 
+if !exists("g:go_fmt_command")
+  let g:go_fmt_command = "gofmt"
+endif
+
+if !exists('g:go_fmt_options')
+  let g:go_fmt_options = ''
+endif
+
+if !exists('g:go_fmt_fail_silently')
+  let g:go_fmt_fail_silently = 0
+endif
+
+if !exists("g:go_fmt_experimental")
+  let g:go_fmt_experimental = 0
+endif
+
 "  we have those problems :
 "  http://stackoverflow.com/questions/12741977/prevent-vim-from-updating-its-undo-tree
 "  http://stackoverflow.com/questions/18532692/golang-formatter-and-vim-how-to-destroy-history-record?rq=1
@@ -156,9 +172,40 @@ function! s:fmt_cmd(bin_name, source, target)
   if type(opts) == type({})
     let opts = has_key(opts, a:bin_name) ? opts[a:bin_name] : ""
   endif
+
+  " start constructing the command
+  let cmd = [bin_path]
+  call add(cmd, "-w")
+    
+  " add the options for binary (if any). go_fmt_options was by default of type
+  " string, however to allow customization it's now a dictionary of binary
+  " name mapping to options.
+  let opts = g:go_fmt_options
+  if type(g:go_fmt_options) == type({})
+    let opts = has_key(g:go_fmt_options, a:bin_name) ? g:go_fmt_options[a:bin_name] : ""
+  endif
   call extend(cmd, split(opts, " "))
-  if a:bin_name is# 'goimports'
-    call extend(cmd, ["-srcdir", a:target])
+
+  if a:bin_name == "goimports"
+    " lazy check if goimports support `-srcdir`. We should eventually remove
+    " this in the future
+    if !exists('b:goimports_vendor_compatible')
+      let out = go#util#System(bin_path . " --help")
+      if out !~ "-srcdir"
+        call go#util#EchoWarning(printf("vim-go: goimports (%s) does not support srcdir. Update with: :GoUpdateBinaries", , bin_path))
+      else
+        let b:goimports_vendor_compatible = 1
+      endif
+    endif
+
+    if exists('b:goimports_vendor_compatible') && b:goimports_vendor_compatible
+      let ssl_save = &shellslash
+      set noshellslash
+      " use the filename without the fully qualified name if the tree is
+      " symlinked into the GOPATH, goimports won't work properly.
+      call extend(cmd, ["-srcdir", shellescape(a:target)])
+      let &shellslash = ssl_save
+    endif
   endif
 
   call add(cmd, a:source)
@@ -189,7 +236,7 @@ endfunction
 " show_errors opens a location list and shows the given errors. If the given
 " errors is empty, it closes the the location list
 function! s:show_errors(errors) abort
-  let l:listtype = go#list#Type("GoFmt")
+  let l:listtype = go#list#Type("locationlist")
   if !empty(a:errors)
     call go#list#Populate(l:listtype, a:errors, 'Format')
     echohl Error | echomsg "Gofmt returned error" | echohl None

@@ -656,7 +656,7 @@ CTRL-t
 
     Changes the build tags for various commands. If you have any file that
     uses a custom build tag, such as `//+build integration` , this command can
-    be used to pass it to all tools that accepts tags, such as guru, gorenate,
+    be used to pass it to all tools that accepts tags, such as guru, gorename,
     etc..
 
     The build tags is cleared (unset) if `""` is given. If no arguments are
@@ -768,8 +768,8 @@ CTRL-t
       :GoAddTags xml db
 <
     If [option] is passed it'll either add a new tag with an option or will
-    modify existing tags. An example of adding `omitempty` to all `json`
-    fields would be:
+    modify existing tags. An example of adding `omitempty` to all `json` fields
+    would be:
 >
       :GoAddTags json,omitempty
 <
@@ -1228,11 +1228,11 @@ used >
 Use this option to add additional options to the |'g:go_fmt_command'|. It's
 value type can be either a string or a dictionary. This is due backwards
 compatibility. The string version will be removed in the future so please use
-the dictionary version. Default is empty.
+the dictionary version. Default is empty. 
 >
   let g:go_fmt_options = ''
 
-  or
+  or 
 
   let g:go_fmt_options = {}
 <
@@ -1281,14 +1281,6 @@ is enabled. >
 Maximum height for the GoDoc window created with |:GoDoc|. Default is 20. >
 
   let g:go_doc_max_height = 20
-<
-
-                                                              *'g:go_doc_url'*
-
-godoc server URL used when |:GoDocBrowser| is used. Change if you want to use
-a private internal service. Default is 'https://godoc.org'.
->
-  let g:go_doc_url = 'https://godoc.org'
 <
 
                                                              *'g:go_def_mode'*
@@ -1423,7 +1415,7 @@ it's using `vet`, `golint` and `errcheck`.
 >
   let g:go_metalinter_enabled = ['vet', 'golint', 'errcheck']
 <
-                                                   *'g:go_metalinter_excludes'*
+                                                  *'g:go_metalinter_excludes'*
 
 Specifies the linters to be excluded from the |:GoMetaLinter| command. By
 default it's empty
@@ -1457,11 +1449,10 @@ explicitly overrides this behavior. For standard Vim behavior, set it to 10.
                                                             *'g:go_list_type'*
 
 Specifies the type of list to use for command outputs (such as errors from
-builds, results from static analysis commands, etc...). The list type for
-specific commands can be overridden with |'g:go_list_type_commands'|. The
-default value (empty) will use the appropriate kind of list for the command
-that was called. Supported values are "", "quickfix", and "locationlist".
->
+builds, results from static analysis commands, etc...). The default value
+(empty) will use the appropriate kind of list for the command that was called.
+Supported values are "", "quickfix", and "locationlist". >
+
   let g:go_list_type = ""
 <
 
@@ -1555,11 +1546,10 @@ to an autocompletion proposals. By default it is enabled.
 >
   let g:go_gocode_propose_builtins = 1
 <
-                                               *'g:go_gocode_propose_source'*
+                                           *'g:go_gocode_unimported_packages'*
 
-Specifies whether `gocode` should use source files instead of binary packages
-for autocompletion proposals. When disabled, only identifiers from the current
-package and packages that have been installed will proposed.
+Specifies whether `gocode` should include suggestions from unimported
+packages. By default it is disabled.
 >
   let g:go_gocode_propose_source = 1
 <
@@ -1621,14 +1611,6 @@ This sets which declarations to show for |:GoDecls| (`ctrp.vim`),
 delimited list.  Possible options are: {func,type}.  The default is: >
 
       let g:go_decls_includes = 'func,type'
-<
-                                                       *'g:go_decls_mode'*
-
-Define the tool to be used for |:GoDecls|. Valid options are `ctrlp.vim`,
-`fzf`, or an empty string; in which case it will try to autodetect either
-`ctrlp.vim` or `fzf`.
->
-      let g:go_decls_mode = ''
 <
                                                     *'g:go_echo_command_info'*
 
@@ -1696,9 +1678,9 @@ You can locally test it by running:
 >
  make
 <
-This will run all tests and print either `PASS` or `FAIL` to indicate the final
-status of all tests. Additionally, each new pull request will trigger a new
-Travis-ci job.
+This will run all tests and print either `PASS` or `FAIL` to indicate the
+final status of all tests. Additionally, each new pull request will trigger a
+new Travis-ci job.
 
 
 ==============================================================================
@@ -1796,7 +1778,13 @@ How do I use vim-go with syntastic?~
 Sometimes when using both `vim-go` and `syntastic` Vim will start lagging
 while saving and opening files. The following fixes this:
 >
- let g:syntastic_go_checkers = ['golint', 'govet', 'errcheck']
+ let g:syntastic_go_checkers = ['golint', 'govet']
+ let g:syntastic_mode_map = { 'mode': 'active', 'passive_filetypes': ['go'] }
+<
+If you want to add errcheck you can use gometalinter as a wrapper
+>
+ let g:syntastic_go_checkers = ['golint', 'govet', 'gometalinter']
+ let g:syntastic_go_gometalinter_args = ['--disable-all', '--enable=errcheck']
  let g:syntastic_mode_map = { 'mode': 'active', 'passive_filetypes': ['go'] }
 <
 Another issue with `vim-go` and `syntastic` is that the location list window
@@ -1810,9 +1798,9 @@ Using with NeoVim~
 
 Note: Neovim currently is not a first class citizen for vim-go. You are free
 to open bug, however I'm not using Neovim so it's hard for me to test it.
-vim-go might not work well as good as in Vim. I'm happy to accept pull requests
-or very detailed bug reports. If you're interested to improve the state of
-Neovim in vim-go you're always welcome!
+vim-go might not work well as good as in Vim. I'm happy to accept pull
+requests or very detailed bug reports. If you're interested to improve the
+state of Neovim in vim-go you're always welcome!
 
 Run `:GoRun` in a new tab, horizontal split or vertical split terminal
 >
@@ -1833,8 +1821,8 @@ by being a patreon at: https://www.patreon.com/fatih
 
 By being a patron, you are enabling vim-go to grow and mature, helping me to
 invest in bug fixes, new documentation, and improving both current and future
-features. It's completely optional and is just a direct way to support Vim-go's
-ongoing development. Thanks!
+features. It's completely optional and is just a direct way to support
+Vim-go's ongoing development. Thanks!
 
 Check it out: https://www.patreon.com/fatih
 

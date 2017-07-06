@@ -94,6 +94,10 @@ function! s:root_dirs() abort
   endif
 
   let paths = map(split(go#util#env("gopath"), go#util#PathListSep()), "substitute(v:val, '\\\\', '/', 'g')")
+  if go#util#ShellError()
+    return []
+  endif
+
   if !empty(filter(paths, 'isdirectory(v:val)'))
     call extend(dirs, paths)
   endif

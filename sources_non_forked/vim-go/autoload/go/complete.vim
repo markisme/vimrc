@@ -159,9 +159,9 @@ function! s:info_filter(echo, result) abort
     return ""
   endif
 
-  let l:result = eval(a:result)
-  if len(l:result) != 2
-    return ""
+  " only one candidate is found
+  if len(out) == 2
+    return split(out[1], ',,')[0]
   endif
 
   let l:candidates = l:result[1]

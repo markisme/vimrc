@@ -86,17 +86,12 @@ function! s:GodocView(newposition, position, content) abort
     execute bufwinnr(s:buf_nr) . 'wincmd w'
   endif
 
-  " if window was not visible then resize it
-  if !is_visible
-    if a:position == "split"
-      " cap window height to 20, but resize it for smaller contents
-      let max_height = go#config#DocMaxHeight()
-      let content_height = len(split(a:content, "\n"))
-      if content_height > max_height
-        exe 'resize ' . max_height
-      else
-        exe 'resize ' . content_height
-      endif
+  if a:position == "split"
+    " cap window height to 20, but resize it for smaller contents
+    let max_height = get(g:, "go_doc_max_height", 20)
+    let content_height = len(split(a:content, "\n"))
+    if content_height > max_height
+      exe 'resize ' . max_height
     else
       " set a sane maximum width for vertical splits. In this case the minimum
       " that fits the godoc for package http without extra linebreaks and line

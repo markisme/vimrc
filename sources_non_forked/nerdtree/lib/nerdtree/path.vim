@@ -1,12 +1,9 @@
-" ============================================================================
-" CLASS: Path
-"
-" The Path class provides an abstracted representation of a file system
-" pathname.  Various operations on pathnames are provided and a number of
-" representations of a given path name can be accessed here.
-" ============================================================================
+"we need to use this number many times for sorting... so we calculate it only
+"once here
+let s:NERDTreeSortStarIndex = index(g:NERDTreeSortOrder, '*')
 
-
+"CLASS: Path
+"============================================================
 let s:Path = {}
 let g:NERDTreePath = s:Path
 
@@ -374,8 +371,8 @@ function! s:Path.getSortOrderIndex()
     return index(g:NERDTreeSortOrder, '*')
 endfunction
 
-" FUNCTION: Path._splitChunks(path) {{{1
-" returns a list of path chunks
+"FUNCTION: Path._splitChunks(path) {{{1
+"returns a list of path chunks
 function! s:Path._splitChunks(path)
     let chunks = split(a:path, '\(\D\+\|\d\+\)\zs')
     let i = 0
@@ -389,8 +386,8 @@ function! s:Path._splitChunks(path)
     return chunks
 endfunction
 
-" FUNCTION: Path.getSortKey() {{{1
-" returns a key used in compare function for sorting
+"FUNCTION: Path.getSortKey() {{{1
+"returns a key used in compare function for sorting
 function! s:Path.getSortKey()
     if !exists("self._sortKey") || g:NERDTreeSortOrder !=# g:NERDTreeOldSortOrder
         let path = self.getLastPathComponent(1)

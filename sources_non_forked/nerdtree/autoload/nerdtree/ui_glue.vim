@@ -348,6 +348,19 @@ function! s:handleMiddleMouse()
     endif
 endfunction
 
+    let l:currentNode = g:NERDTreeFileNode.GetSelected()
+    if empty(l:currentNode)
+        call nerdtree#echoError('use the pointer to select a node')
+        return
+    endif
+
+    if l:currentNode.path.isDirectory
+        call l:currentNode.openExplorer()
+    else
+        call l:currentNode.open({'where': 'h'})
+    endif
+endfunction
+
 " FUNCTION: nerdtree#ui_glue#invokeKeyMap(key) {{{1
 "this is needed since I cant figure out how to invoke dict functions from a
 "key map

@@ -44,10 +44,14 @@ function! go#coverage#Buffer(bang, ...) abort
   let s:toggle = 1
   let l:tmpname = tempname()
 
+  if get(g:, 'go_echo_command_info', 1)
+    echon "vim-go: " | echohl Identifier | echon "testing ..." | echohl None
+  endif
+
   if go#util#has_job()
     call s:coverage_job({
-          \ 'cmd': ['go', 'test', '-tags', go#config#BuildTags(), '-coverprofile', l:tmpname] + a:000,
-          \ 'complete': function('s:coverage_callback', [l:tmpname]),
+          \ 'cmd': ['go', 'test', '-coverprofile', l:tmpname] + a:000,
+          \ 'custom_cb': function('s:coverage_callback', [l:tmpname]),
           \ 'bang': a:bang,
           \ 'for': 'GoTest',
           \ 'statustype': 'coverage',
@@ -64,7 +68,23 @@ function! go#coverage#Buffer(bang, ...) abort
     call extend(args, a:000)
   endif
 
+  let disabled_term = 0
+  if get(g:, 'go_term_enabled')
+    let disabled_term = 1
+    let g:go_term_enabled = 0
+  endif
+
   let id = call('go#test#Test', args)
+
+  if disabled_term
+    let g:go_term_enabled = 1
+  endif
+
+  if has('nvim')
+    call go#jobcontrol#AddHandler(function('s:coverage_handler'))
+    let s:coverage_handler_jobs[id] = l:tmpname
+    return
+  endif
 
   if go#util#ShellError() == 0
     call go#coverage#overlay(l:tmpname)
@@ -106,6 +126,12 @@ function! go#coverage#Browser(bang, ...) abort
   endif
 
   let id = call('go#test#Test', args)
+  if has('nvim')
+    call go#jobcontrol#AddHandler(function('s:coverage_browser_handler'))
+    let s:coverage_browser_handler_jobs[id] = l:tmpname
+    return
+  endif
+
 
   if go#util#ShellError() == 0
     call go#tool#ExecuteInDir(['go', 'tool', 'cover', '-html=' . l:tmpname])

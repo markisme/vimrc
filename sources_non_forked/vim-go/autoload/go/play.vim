@@ -15,9 +15,9 @@ function! go#play#Share(count, line1, line2) abort
   " we can remove the temp file because it's now posted.
   call delete(share_file)
 
-  if l:err != 0
-    echom 'A error has occurred. Run this command to see what the problem is:'
-    echom go#util#Shelljoin(l:cmd)
+  if go#util#ShellError() != 0
+    echo 'A error has occurred. Run this command to see what the problem is:'
+    echo command
     return
   endif
 

@@ -30,7 +30,7 @@ func! Test_update_file() abort
   call assert_equal(expected, actual)
 endfunc
 
-func! Test_goimports() abort
+func Test_goimports()
   let $GOPATH = 'test-fixtures/fmt/'
   let actual_file = tempname()
   call writefile(readfile("test-fixtures/fmt/src/imports/goimports.go"), actual_file)
@@ -45,5 +45,3 @@ func! Test_goimports() abort
 
   call assert_equal(expected, actual)
 endfunc
-
-" vim: sw=2 ts=2 et

@@ -40,7 +40,13 @@ function! go#def#Jump(mode) abort
       call add(cmd, "-modified")
     endif
 
-    call extend(cmd, ["definition", fname . ':#' . go#util#OffsetCursor()])
+    if exists('g:go_build_tags')
+      let tags = get(g:, 'go_build_tags')
+      call extend(cmd, ["-tags", tags])
+    endif
+
+    let fname = fname.':#'.go#util#OffsetCursor()
+    call extend(cmd, ["definition", fname])
 
     if go#util#has_job()
       let l:state = {}

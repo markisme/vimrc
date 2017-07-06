@@ -41,6 +41,7 @@ that are part of Git repositories).
                         -     |:Git| add
                         -     |:Git| reset (staged files)
                         a     Show alternative format
+                        cA    |:Gcommit| --amend --reuse-message=HEAD
                         ca    |:Gcommit| --amend
                         cc    |:Gcommit|
                         ce    |:Gcommit| --amend --no-edit
@@ -200,10 +201,6 @@ that are part of Git repositories).
                                                 *fugitive-:Gmove*
 :Gmove {destination}    Wrapper around git-mv that renames the buffer
                         afterward.  Add a ! to pass -f.
-
-                                                *fugitive-:Grename*
-:Grename {destination}  Like |:Gmove| but operates relative to the parent
-                        directory of the current file.
 
                                                 *fugitive-:Gdelete*
 :Gdelete                Wrapper around git-rm that deletes the buffer

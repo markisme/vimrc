@@ -21,6 +21,7 @@ function! s:TreeDirNode.AbsoluteTreeRoot()
 endfunction
 
 " FUNCTION: TreeDirNode.activate([options]) {{{1
+unlet s:TreeDirNode.activate
 function! s:TreeDirNode.activate(...)
     let l:options = (a:0 > 0) ? a:1 : {}
 
@@ -52,7 +53,7 @@ function! s:TreeDirNode.addChild(treenode, inOrder)
 endfunction
 
 " FUNCTION: TreeDirNode.close() {{{1
-" Mark this TreeDirNode as closed.
+" Closes this directory
 function! s:TreeDirNode.close()
 
     " Close all directories in this directory node's cascade. This is
@@ -63,7 +64,7 @@ function! s:TreeDirNode.close()
 endfunction
 
 " FUNCTION: TreeDirNode.closeChildren() {{{1
-" Recursively close any directory nodes that are descendants of this node.
+" Closes all the child dir nodes of this node
 function! s:TreeDirNode.closeChildren()
     for l:child in self.children
         if l:child.path.isDirectory
@@ -90,8 +91,7 @@ function! s:TreeDirNode.createChild(path, inOrder)
 endfunction
 
 " FUNCTION: TreeDirNode.displayString() {{{1
-" Assemble and return a string that can represent this TreeDirNode object in
-" the NERDTree window.
+unlet s:TreeDirNode.displayString
 function! s:TreeDirNode.displayString()
     let l:result = ''
 
@@ -151,32 +151,6 @@ function! s:TreeDirNode.getCascade()
     let visChild = vc[0]
 
     return [self] + visChild.getCascade()
-endfunction
-
-" FUNCTION: TreeDirNode.getCascadeRoot() {{{1
-" Return the first directory node in the cascade in which this directory node
-" is rendered.
-function! s:TreeDirNode.getCascadeRoot()
-
-    " Don't search above the current NERDTree root node.
-    if self.isRoot()
-        return self
-    endif
-
-    let l:cascadeRoot = self
-    let l:parent = self.parent
-
-    while !empty(l:parent) && !l:parent.isRoot()
-
-        if index(l:parent.getCascade(), self) == -1
-            break
-        endif
-
-        let l:cascadeRoot = l:parent
-        let l:parent = l:parent.parent
-    endwhile
-
-    return l:cascadeRoot
 endfunction
 
 " FUNCTION: TreeDirNode.getChildCount() {{{1
@@ -253,6 +227,13 @@ function! s:TreeDirNode.getChildIndex(path)
     return -1
 endfunction
 
+" FUNCTION: TreeDirNode.getDirChildren() {{{1
+" Return a list of all child nodes from "self.children" that are of type
+" TreeDirNode.
+function! s:TreeDirNode.getDirChildren()
+    return filter(self.children, 'v:val.path.isDirectory == 1')
+endfunction
+
 " FUNCTION: TreeDirNode._glob(pattern, all) {{{1
 " Return a list of strings naming the descendants of the directory in this
 " TreeDirNode object that match the specified glob pattern.
@@ -273,10 +254,10 @@ function! s:TreeDirNode._glob(pattern, all)
     if self.path.str() == getcwd()
         let l:pathSpec = ','
     else
-        let l:pathSpec = escape(fnamemodify(self.path.str({'format': 'Glob'}), ':.'), ',')
+        let l:pathSpec = fnamemodify(self.path.str({'format': 'Glob'}), ':.')
 
         " On Windows, the drive letter may be removed by "fnamemodify()".
-        if nerdtree#runningWindows() && l:pathSpec[0] == g:NERDTreePath.Slash()
+        if nerdtree#runningWindows() && l:pathSpec[0] == '\'
             let l:pathSpec = self.path.drive . l:pathSpec
         endif
     endif
@@ -441,10 +422,11 @@ function! s:TreeDirNode.New(path, nerdtree)
     return newTreeNode
 endfunction
 
-" FUNCTION: TreeDirNode.open([options]) {{{1
-" Open this directory node in the current tree or elsewhere if special options
-" are provided. Return 0 if options were processed. Otherwise, return the
-" number of new cached nodes.
+" FUNCTION: TreeDirNode.open([opts]) {{{1
+" Open the dir in the current tree or in a new tree elsewhere.
+"
+" If opening in the current tree, return the number of cached nodes.
+unlet s:TreeDirNode.open
 function! s:TreeDirNode.open(...)
     let l:options = a:0 ? a:1 : {}
 
@@ -518,14 +500,26 @@ function! s:TreeDirNode._openInNewTab()
 endfunction
 
 " FUNCTION: TreeDirNode.openRecursively() {{{1
-" Open this directory node and any descendant directory nodes whose pathnames
-" are not ignored.
+" Opens this treenode and all of its children whose paths arent 'ignored'
+" because of the file filters.
+"
+" This method is actually a wrapper for the OpenRecursively2 method which does
+" the work.
 function! s:TreeDirNode.openRecursively()
     silent call self.open()
 
-    for l:child in self.children
-        if l:child.path.isDirectory && !l:child.path.ignore(l:child.getNerdtree())
-            call l:child.openRecursively()
+" FUNCTION: TreeDirNode._openRecursively2() {{{1
+" Opens this all children of this treenode recursively if either:
+"   *they arent filtered by file filters
+"   *a:forceOpen is 1
+"
+" Args:
+" forceOpen: 1 if this node should be opened regardless of file filters
+function! s:TreeDirNode._openRecursively2(forceOpen)
+    if self.path.ignore(self.getNerdtree()) ==# 0 || a:forceOpen
+        let self.isOpen = 1
+        if self.children ==# []
+            call self._initChildren(1)
         endif
     endfor
 endfunction

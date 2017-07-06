@@ -181,9 +181,16 @@ function! go#path#CheckBinPath(binpath) abort
 
   let $PATH = old_path
 
-  if go#util#IsUsingCygwinShell() == 1
-    return s:CygwinPath(a:binpath)
-  endif
+   " When you are using:
+   " 1) Windows system
+   " 2) Has cygpath executable
+   " 3) Use *sh* as 'shell'
+   "
+   " This converts your <path> to $(cygpath '<path>') to make cygwin working in
+   " shell of cygwin way
+   if go#util#IsWin() && executable('cygpath') && &shell !~ '.*sh.*'
+     return printf("$(cygpath '%s')", a:bin_path)
+   endif
 
   return go_bin_path . go#util#PathSep() . basename
 endfunction

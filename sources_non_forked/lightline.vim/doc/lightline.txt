@@ -4,7 +4,7 @@ Version: 0.1
 Author: itchyny (https://github.com/itchyny)
 License: MIT License
 Repository: https://github.com/itchyny/lightline.vim
-Last Change: 2018/04/28 00:08:18.
+Last Change: 2017/05/28 01:07:02.
 
 CONTENTS					*lightline-contents*
 
@@ -29,7 +29,7 @@ The *lightline* plugin is a light and configurable statusline/tabline for Vim.
 SPIRIT						*lightline-spirit*
 
 	Minimalism
-	    The core script is very small to achieve enough functions as a
+	    The core script is very small to achive enough functions as a
 	    statusline plugin.
 
 	Configurability

@@ -167,7 +167,8 @@ snippet ipdb
 	__import__('ipdb').set_trace()
 # embed ipython itself
 snippet iem
-	__import__('IPython').embed()
+	import IPython
+	IPython.embed()
 # remote python debugger (rpdb)
 snippet rpdb
 	import rpdb

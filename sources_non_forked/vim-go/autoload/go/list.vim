@@ -55,8 +55,12 @@ function! go#list#Populate(listtype, items, title) abort
   endif
 endfunction
 
+function! go#list#PopulateWin(winnr, items) abort
+  call setloclist(a:winnr, a:items, 'r')
+endfunction
+
 " Parse parses the given items based on the specified errorformat and
-" populates the list.
+" populates the location list.
 function! go#list#ParseFormat(listtype, errformat, items, title) abort
   " backup users errorformat, will be restored once we are finished
   let old_errorformat = &errorformat

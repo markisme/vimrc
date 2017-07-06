@@ -25,12 +25,8 @@ function! go#cmd#Build(bang, ...) abort
   " placeholder with the current folder (indicated with '.'). We also pass -i
   " that tries to install the dependencies, this has the side effect that it
   " caches the build results, so every other build is faster.
-  let l:args =
-        \ ['build', '-tags', go#config#BuildTags()] +
-        \ map(copy(a:000), "expand(v:val)") +
-        \ [".", "errors"]
+  let args = ["build"]  + goargs + ["-i", ".", "errors"]
 
-  " Vim and Neovim async.
   if go#util#has_job()
     call s:cmd_job({
           \ 'cmd': ['go'] + args,
@@ -321,26 +317,6 @@ function! s:cmd_job(args) abort
   " post start
   execute cd . fnameescape(dir)
   let $GOPATH = old_gopath
-endfunction
-
-
-" test_compile is called when a GoTestCompile call is finished
-function! s:test_compile(test_file, job, exit_status, data) abort
-  call delete(a:test_file)
-endfunction
-
-" -----------------------
-" | Neovim job handlers |
-" -----------------------
-let s:test_compile_handlers = {}
-
-function! s:test_compile_handler(job, exit_status, data) abort
-  if !has_key(s:test_compile_handlers, a:job.id)
-    return
-  endif
-  let l:compile_file = s:test_compile_handlers[a:job.id]
-  call delete(l:compile_file)
-  unlet s:test_compile_handlers[a:job.id]
 endfunction
 
 " vim: sw=2 ts=2 et
