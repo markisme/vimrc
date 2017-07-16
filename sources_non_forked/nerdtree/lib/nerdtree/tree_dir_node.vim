@@ -53,7 +53,7 @@ function! s:TreeDirNode.addChild(treenode, inOrder)
 endfunction
 
 " FUNCTION: TreeDirNode.close() {{{1
-" Closes this directory
+" Mark this TreeDirNode as closed.
 function! s:TreeDirNode.close()
 
     " Close all directories in this directory node's cascade. This is
@@ -91,7 +91,8 @@ function! s:TreeDirNode.createChild(path, inOrder)
 endfunction
 
 " FUNCTION: TreeDirNode.displayString() {{{1
-unlet s:TreeDirNode.displayString
+" Assemble and return a string that can represent this TreeDirNode object in
+" the NERDTree window.
 function! s:TreeDirNode.displayString()
     let l:result = ''
 
@@ -422,11 +423,10 @@ function! s:TreeDirNode.New(path, nerdtree)
     return newTreeNode
 endfunction
 
-" FUNCTION: TreeDirNode.open([opts]) {{{1
-" Open the dir in the current tree or in a new tree elsewhere.
-"
-" If opening in the current tree, return the number of cached nodes.
-unlet s:TreeDirNode.open
+" FUNCTION: TreeDirNode.open([options]) {{{1
+" Open this directory node in the current tree or elsewhere if special options
+" are provided. Return 0 if options were processed. Otherwise, return the
+" number of new cached nodes.
 function! s:TreeDirNode.open(...)
     let l:options = a:0 ? a:1 : {}
 
@@ -500,26 +500,14 @@ function! s:TreeDirNode._openInNewTab()
 endfunction
 
 " FUNCTION: TreeDirNode.openRecursively() {{{1
-" Opens this treenode and all of its children whose paths arent 'ignored'
-" because of the file filters.
-"
-" This method is actually a wrapper for the OpenRecursively2 method which does
-" the work.
+" Open this directory node and any descendant directory nodes whose pathnames
+" are not ignored.
 function! s:TreeDirNode.openRecursively()
     silent call self.open()
 
-" FUNCTION: TreeDirNode._openRecursively2() {{{1
-" Opens this all children of this treenode recursively if either:
-"   *they arent filtered by file filters
-"   *a:forceOpen is 1
-"
-" Args:
-" forceOpen: 1 if this node should be opened regardless of file filters
-function! s:TreeDirNode._openRecursively2(forceOpen)
-    if self.path.ignore(self.getNerdtree()) ==# 0 || a:forceOpen
-        let self.isOpen = 1
-        if self.children ==# []
-            call self._initChildren(1)
+    for l:child in self.children
+        if l:child.path.isDirectory && !l:child.path.ignore(l:child.getNerdtree())
+            call l:child.openRecursively()
         endif
     endfor
 endfunction

@@ -717,9 +717,13 @@ function! s:Git(bang, args) abort
   if has('gui_running') && !has('win32')
     let git .= ' --no-pager'
   endif
-  if len(base)
-    if exists('+shellslash') && !&shellslash
-      let base = tr(base, '/', '\')
+  let args = matchstr(a:args,'\v\C.{-}%($|\\@<!%(\\\\)*\|)@=')
+  if exists(':terminal') && has('nvim')
+    let dir = s:repo().tree()
+    if expand('%') != ''
+      -tabedit %
+    else
+      -tabnew
     endif
     call projectionist#append(base, FugitiveCommonDir(dir) . '/info/projections.json')
   endif
