@@ -20,11 +20,10 @@ CONTENTS                                            *multiple-cursors-contents*
     4.Global Options..........................|multiple-cursors-global-options|
     5.Interactions with other plugins.........|multiple-cursors-other-plugins|
     6.Highlight...............................|multiple-cursors-highlight|
-    7.FAQ.....................................|multiple-cursors-faq|
-    8.Contributing............................|multiple-cursors-contributing|
-    9.License.................................|multiple-cursors-license|
-   10.Credit..................................|multiple-cursors-credit|
-   11.References..............................|multiple-cursors-references|
+    7.Contributing............................|multiple-cursors-contributing|
+    8.License.................................|multiple-cursors-license|
+    9.Credit..................................|multiple-cursors-credit|
+   10.References..............................|multiple-cursors-references|
 
 ==============================================================================
 1. Intro                                              *multiple-cursors-intro*
@@ -106,16 +105,6 @@ If set to 0, then pressing |g:multi_cursor_quit_key| in |insert-mode| will not
 quit and delete all existing cursors. Useful if you want to go back to Normal
 mode, and still be able to operate on all the cursors.
 
-*g:multi_cursor_insert_maps* (Default: `{}`)
-
-Any key in this map (values are ignored) will cause multi-cursor _Insert_ mode
-to pause for `timeoutlen` waiting for map completion just like normal vim.
-Otherwise keys mapped in insert mode are ignored when multiple cursors are
-active. For example, setting it to `{'\':1}` will make insert-mode mappings
-beginning with the default leader key work in multi-cursor mode. You have to
-manually set this because vim doesn't provide a way to see which keys _start_
-mappings.
-
 *g:multi_cursor_normal_maps* (Default: see below)
 
 `{'@': 1, 'F': 1, 'T': 1, '[': 1, '\': 1, ']': 1, '!': 1, '"': 1, 'c': 1, 'd': 1, 'f': 1, 'g': 1, 'm': 1, 'q': 1, 'r': 1, 't': 1, 'y': 1, 'z': 1, '<': 1, '=': 1, '>': 1}`
@@ -175,33 +164,7 @@ like the following in your vimrc: >
     highlight link multiple_cursors_visual Visual
 
 ==============================================================================
-7. FAQ                                              *multiple-cursors-faq*
-
-Q:  <A-n> doesn't seem to work in VIM but works in gVIM, why?
-A:  This is a well known terminal/Vim [9], different terminal have different
-    ways to send `Alt+key`.  Try adding this in your `.vimrc` and make sure
-    to replace the string: >
-    if !has('gui_running')
-      map "in Insert mode, type Ctrl+v Alt+n here" <A-n>
-    endif
-Or remap the following: >
-    g:multi_cursor_start_key
-    g:multi_cursor_select_all_key
-
-Q:  <C-n> doesn't seem to work in gVIM?
-A:  Try setting `set selection=inclusive` in your `~/.gvimrc`
-
-Q:  is it also working on Mac?
-A:  On Mac OS, MacVim[10] is known to work.
-
-Q:  How can I select `n` keywords with several keystrokes? `200<C-n>` does not work.
-A:  You can use :MultipleCursorsFind keyword. I have this binding in my vimrc: >
-    nnoremap <silent> <M-j> :MultipleCursorsFind <C-R>/<CR>
-    vnoremap <silent> <M-j> :MultipleCursorsFind <C-R>/<CR>
-This allows one to search for the keyword using `*` and turn search results into cursors with `Alt-j`.
-
-==============================================================================
-8. Contributing                                *multiple-cursors-contributing*
+7. Contributing                                *multiple-cursors-contributing*
 
 The project is hosted on Github. Patches, feature requests and suggestions are
 always welcome!
@@ -210,12 +173,12 @@ Find the latest version of the plugin here:
     http://github.com/terryma/vim-multiple-cursors
 
 ==============================================================================
-9. License                                          *multiple-cursors-license*
+8. License                                          *multiple-cursors-license*
 
 The project is licensed under the MIT license [7]. Copyright 2013 Terry Ma
 
 ==============================================================================
-10. Credit                                           *multiple-cursors-credit*
+9. Credit                                            *multiple-cursors-credit*
 
 The plugin is obviously inspired by Sublime Text's awesome multiple selection
 [6] feature. Some inspiration was also taken from Emac's multiple cursors [8]

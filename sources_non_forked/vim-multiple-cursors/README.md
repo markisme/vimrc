@@ -15,12 +15,6 @@
  - [Contributing](#contributing)
  - [Credit](#credit)
 
-### Contributors
-- [eapache](https://github.com/eapache)
-- [aschrab](https://github.com/aschrab)
-- [kristijanhusak](https://github.com/kristijanhusak)
-- [faceleg](https://github.com/faceleg)
-
 ## About
 [There](https://github.com/paradigm/vim-multicursor) [have](https://github.com/felixr/vim-multiedit) [been](https://github.com/hlissner/vim-multiedit) [many](https://github.com/adinapoli/vim-markmultiple) [attempts](https://github.com/AndrewRadev/multichange.vim) at bringing Sublime Text's awesome [multiple selection][sublime-multiple-selection] feature into Vim, but none so far have been in my opinion a faithful port that is simplistic to use, yet powerful and intuitive enough for an existing Vim user. [vim-multiple-cursors] is yet another attempt at that.
 
@@ -32,7 +26,7 @@ Vim command sequence: `fp<C-n><C-n><C-n>cname`
 ### Add a cursor to each line of your visual selection
 ![Example2](assets/example2.gif?raw=true)
 
-Vim command sequence: `2Gvip<C-n>i"<Right><Right><Right>",<Esc>vipJ$r]Idays = [`
+Vim command sequence: `vip<C-n>i"<Right><Right><Right>",<Esc>vipgJ$r]Idays = [`
 
 ### Match characters from visual selection
 ![Example3](assets/example3.gif?raw=true)
@@ -44,31 +38,10 @@ Vim command sequence: `df[$r,0f,v<C-n>…<C-n>c<CR><Up><Del><Right><Right><Right
 
 To see what keystrokes are used for the above examples, see [the wiki page](https://github.com/terryma/vim-multiple-cursors/wiki/Keystrokes-for-example-gifs).
 
-## Features
-- Live update in Insert mode
-- One key to rule it all! See [Quick Start](#quick-start) on what the key does in different scenarios
-- Works in Normal, Insert, and Visual mode for any commands (including
-  multi-key commands, assuming you set `g:multicursor_insert_maps` and
-  `g:multicursor_normal_maps`; see Settings below for details)
-
 ## Installation
-Install using [Pathogen], [Vundle], [Neobundle], [vim-plug], or your favorite Vim package manager.
+Install using [Pathogen], [Vundle], [Neobundle], or your favorite Vim package manager.
 
-Requires vim 7.4 or newer for full functionality.
-
-### vim-plug instructions
-
-1. Paste this block into the top of `~/.vimrc`.
-
-```vim script
-call plug#begin()
-
-Plug 'terryma/vim-multiple-cursors'
-
-call plug#end()
-```
-
-2. Start vim and execute `:PlugInstall`.
+Requires vim 7.4 or later for full functionality.
 
 ## Quick Start
 ### normal mode / visual mode
@@ -126,15 +99,6 @@ Useful if you want to go back to Normal mode, and still be able to operate on al
 If set to 0, then pressing `g:multi_cursor_quit_key` in _Insert_ mode will not quit and delete all existing cursors.  
 Useful if you want to go back to Normal mode, and still be able to operate on all the cursors.
 
-### ```g:multi_cursor_insert_maps``` (Default: `{}`)
-Any key in this map (values are ignored) will cause multi-cursor _Insert_ mode
-to pause for `timeoutlen` waiting for map completion just like normal vim.
-Otherwise keys mapped in insert mode are ignored when multiple cursors are
-active. For example, setting it to `{'\':1}` will make insert-mode mappings
-beginning with the default leader key work in multi-cursor mode. You have to
-manually set this because vim doesn't provide a way to see which keys _start_
-mappings.
-
 ### ```g:multi_cursor_normal_maps``` (Default: see below)
 `{'@': 1, 'F': 1, 'T': 1, '[': 1, '\': 1, ']': 1, '!': 1, '"': 1, 'c': 1, 'd': 1, 'f': 1, 'g': 1, 'm': 1, 'q': 1, 'r': 1, 't': 1, 'y': 1, 'z': 1, '<': 1, '=': 1, '>': 1}`
 
@@ -183,9 +147,6 @@ endfunction
 Plugins themselves can register `User` autocommands on `MultipleCursorsPre` and
 `MultipleCursorsPost` for automatic integration.
 
-Plugins themselves can register `User` autocommands on `MultipleCursorsPre` and
-`MultipleCursorsPost` for automatic integration.
-
 ### Highlight
 The plugin uses the highlight group `multiple_cursors_cursor` and `multiple_cursors_visual` to highlight the virtual cursors and their visual selections respectively. You can customize them by putting something similar like the following in your vimrc:
 
@@ -197,27 +158,13 @@ highlight link multiple_cursors_visual Visual
 
 ## FAQ
 
-#### **Q** <kbd>ALT</kbd>+<kbd>n</kbd> doesn't seem to work in VIM but works in gVIM, why?
-**A** This is a well known terminal/Vim [issue](http://vim.wikia.com/wiki/Get_Alt_key_to_work_in_terminal), different terminal have different ways to send ```Alt+key```.  
-Try adding this in your `.vimrc` and **make sure to replace the string**:
-```vim
-if !has('gui_running')
-  map "in Insert mode, type Ctrl+v Alt+n here" <A-n>
-endif
-```
-Or remap the following:
-```vim
-g:multi_cursor_start_key
-g:multi_cursor_select_all_key
-```
-
 #### **Q** <kbd>CTRL</kbd>+<kbd>n</kbd> doesn't seem to work in gVIM?
 **A** Try setting `set selection=inclusive` in your `~/.gvimrc`
 
 #### **Q** is it also working on Mac?
 **A** On Mac OS, [MacVim](https://code.google.com/p/macvim/) is known to work.
 
-#### **Q** How can I select `n` keywords with several keystrokes? `200<C-n>` does not work.
+#### **Q** How can I select `n` keywords with several keystrokes? `200<C-n>` which does not work...
 **A** You can use :MultipleCursorsFind keyword. I have this binding in my vimrc:
 
 ```VimL
