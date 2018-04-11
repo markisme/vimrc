@@ -12,67 +12,67 @@ function! gitgutter#debug#debug()
   setlocal bufhidden=delete
   setlocal noswapfile
 
-  call s:vim_version()
-  call s:separator()
+  call gitgutter#debug#vim_version()
+  call gitgutter#debug#separator()
 
-  call s:git_version()
-  call s:separator()
+  call gitgutter#debug#git_version()
+  call gitgutter#debug#separator()
 
-  call s:grep_version()
-  call s:separator()
+  call gitgutter#debug#grep_version()
+  call gitgutter#debug#separator()
 
-  call s:option('updatetime')
-  call s:option('shell')
-  call s:option('shellcmdflag')
-  call s:option('shellpipe')
-  call s:option('shellquote')
-  call s:option('shellredir')
-  call s:option('shellslash')
-  call s:option('shelltemp')
-  call s:option('shelltype')
-  call s:option('shellxescape')
-  call s:option('shellxquote')
+  call gitgutter#debug#option('updatetime')
+  call gitgutter#debug#option('shell')
+  call gitgutter#debug#option('shellcmdflag')
+  call gitgutter#debug#option('shellpipe')
+  call gitgutter#debug#option('shellquote')
+  call gitgutter#debug#option('shellredir')
+  call gitgutter#debug#option('shellslash')
+  call gitgutter#debug#option('shelltemp')
+  call gitgutter#debug#option('shelltype')
+  call gitgutter#debug#option('shellxescape')
+  call gitgutter#debug#option('shellxquote')
 endfunction
 
 
-function! s:separator()
-  call s:output('')
+function! gitgutter#debug#separator()
+  call gitgutter#debug#output('')
 endfunction
 
-function! s:vim_version()
+function! gitgutter#debug#vim_version()
   redir => version_info
     silent execute 'version'
   redir END
-  call s:output(split(version_info, '\n')[0:2])
+  call gitgutter#debug#output(split(version_info, '\n')[0:2])
 endfunction
 
-function! s:git_version()
+function! gitgutter#debug#git_version()
   let v = system(g:gitgutter_git_executable.' --version')
-  call s:output( substitute(v, '\n$', '', '') )
+  call gitgutter#debug#output( substitute(v, '\n$', '', '') )
 endfunction
 
-function! s:grep_version()
+function! gitgutter#debug#grep_version()
   let v = system('grep --version')
-  call s:output( substitute(v, '\n$', '', '') )
+  call gitgutter#debug#output( substitute(v, '\n$', '', '') )
 
   let v = system('grep --help')
-  call s:output( substitute(v, '\%x00', '', 'g') )
+  call gitgutter#debug#output( substitute(v, '\%x00', '', 'g') )
 endfunction
 
-function! s:option(name)
+function! gitgutter#debug#option(name)
   if exists('+' . a:name)
     let v = eval('&' . a:name)
-    call s:output(a:name . '=' . v)
+    call gitgutter#debug#output(a:name . '=' . v)
     " redir => output
     "   silent execute "verbose set " . a:name . "?"
     " redir END
-    " call s:output(a:name . '=' . output)
+    " call gitgutter#debug#output(a:name . '=' . output)
   else
-    call s:output(a:name . ' [n/a]')
+    call gitgutter#debug#output(a:name . ' [n/a]')
   end
 endfunction
 
-function! s:output(text)
+function! gitgutter#debug#output(text)
   call append(line('$'), a:text)
 endfunction
 

@@ -1,28 +1,37 @@
-<!--- To assist in resolving your issue, provide as much information as possible. -->
+_To assist in resolving your issue, provide as much information as possible, in place of the ellipses (`…`) below._
 
-### Environment
-<!--- Describe your Vim/NERDTree setup. -->
+---
+**Environment:** _Describe your Vim/NERDTree setup._
 
-* Operating System: 
-* Vim version `:version`: 
-* NERDTree version `git rev-parse --short HEAD`: 
-* NERDTree settings applied in your vimrc, if any:
-    ```vim
-    ```
+>* Operating System: …
+>* Vim version `:version`: …
+>* NERDTree version `git rev-parse --short HEAD`: …
+>* NERDTree settings applied in your vimrc, if any:
+>
+>   ```
+>   …
+>   ```
 
-### Process
-<!--- List the steps that will recreate the issue. -->
+**Process:** _List the steps that will recreate the issue._
 
-1. 
+>1. …
 
-### Current Result
-<!--- Describe what you you currently experience from this process. -->
+**Current Result:** _Describe what you you currently experience from this process._
 
-### Expected Result
-<!--- Describe what you would have expected from this process. -->
+>…
 
-### Screenshot(s)
+**Expected Result:** _Describe what you would expect to have resulted from this process._
 
-### Possible Fix
-<!--- If you have explored the code, share what you've found. -->
+>…
+
+---
+**Optional**
+
+**Screenshot(s):**
+
+>…
+
+**Possible Fix:** _(Have you poked around in the code?)_
+
+>…
 

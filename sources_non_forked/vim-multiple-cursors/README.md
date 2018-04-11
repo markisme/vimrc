@@ -32,7 +32,7 @@ Vim command sequence: `fp<C-n><C-n><C-n>cname`
 ### Add a cursor to each line of your visual selection
 ![Example2](assets/example2.gif?raw=true)
 
-Vim command sequence: `vip<C-n>i"<Right><Right><Right>",<Esc>vipgJ$r]Idays = [`
+Vim command sequence: `2Gvip<C-n>i"<Right><Right><Right>",<Esc>vipJ$r]Idays = [`
 
 ### Match characters from visual selection
 ![Example3](assets/example3.gif?raw=true)
@@ -43,6 +43,13 @@ Vim command sequence: `df[$r,0f,v<C-n>…<C-n>c<CR><Up><Del><Right><Right><Right
 ![Example4](assets/example4.gif?raw=true)
 
 To see what keystrokes are used for the above examples, see [the wiki page](https://github.com/terryma/vim-multiple-cursors/wiki/Keystrokes-for-example-gifs).
+
+## Features
+- Live update in Insert mode
+- One key to rule it all! See [Quick Start](#quick-start) on what the key does in different scenarios
+- Works in Normal, Insert, and Visual mode for any commands (including
+  multi-key commands, assuming you set `g:multicursor_insert_maps` and
+  `g:multicursor_normal_maps`; see Settings below for details)
 
 ## Installation
 Install using [Pathogen], [Vundle], [Neobundle], [vim-plug], or your favorite Vim package manager.
@@ -118,6 +125,15 @@ Useful if you want to go back to Normal mode, and still be able to operate on al
 ### ```g:multi_cursor_exit_from_insert_mode``` (Default: 1)
 If set to 0, then pressing `g:multi_cursor_quit_key` in _Insert_ mode will not quit and delete all existing cursors.  
 Useful if you want to go back to Normal mode, and still be able to operate on all the cursors.
+
+### ```g:multi_cursor_insert_maps``` (Default: `{}`)
+Any key in this map (values are ignored) will cause multi-cursor _Insert_ mode
+to pause for `timeoutlen` waiting for map completion just like normal vim.
+Otherwise keys mapped in insert mode are ignored when multiple cursors are
+active. For example, setting it to `{'\':1}` will make insert-mode mappings
+beginning with the default leader key work in multi-cursor mode. You have to
+manually set this because vim doesn't provide a way to see which keys _start_
+mappings.
 
 ### ```g:multi_cursor_normal_maps``` (Default: see below)
 `{'@': 1, 'F': 1, 'T': 1, '[': 1, '\': 1, ']': 1, '!': 1, '"': 1, 'c': 1, 'd': 1, 'f': 1, 'g': 1, 'm': 1, 'q': 1, 'r': 1, 't': 1, 'y': 1, 'z': 1, '<': 1, '=': 1, '>': 1}`

@@ -1,37 +1,3 @@
-function! gitgutter#highlight#line_disable() abort
-  let g:gitgutter_highlight_lines = 0
-  call s:define_sign_line_highlights()
-
-  if !g:gitgutter_signs
-    call gitgutter#sign#clear_signs(bufnr(''))
-    call gitgutter#sign#remove_dummy_sign(bufnr(''), 0)
-  endif
-
-  redraw!
-endfunction
-
-function! gitgutter#highlight#line_enable() abort
-  let old_highlight_lines = g:gitgutter_highlight_lines
-
-  let g:gitgutter_highlight_lines = 1
-  call s:define_sign_line_highlights()
-
-  if !old_highlight_lines && !g:gitgutter_signs
-    call gitgutter#all(1)
-  endif
-
-  redraw!
-endfunction
-
-function! gitgutter#highlight#line_toggle() abort
-  if g:gitgutter_highlight_lines
-    call gitgutter#highlight#line_disable()
-  else
-    call gitgutter#highlight#line_enable()
-  endif
-endfunction
-
-
 function! gitgutter#highlight#define_sign_column_highlight() abort
   if g:gitgutter_override_sign_column_highlight
     highlight! link SignColumn LineNr
@@ -41,7 +7,7 @@ function! gitgutter#highlight#define_sign_column_highlight() abort
 endfunction
 
 function! gitgutter#highlight#define_highlights() abort
-  let [guibg, ctermbg] = s:get_background_colors('SignColumn')
+  let [guibg, ctermbg] = gitgutter#highlight#get_background_colors('SignColumn')
 
   " Highlights used by the signs.
 
@@ -53,7 +19,7 @@ function! gitgutter#highlight#define_highlights() abort
   execute "highlight GitGutterAddInvisible    guifg=bg guibg=" . guibg . " ctermfg=" . ctermbg . " ctermbg=" . ctermbg
   execute "highlight GitGutterChangeInvisible guifg=bg guibg=" . guibg . " ctermfg=" . ctermbg . " ctermbg=" . ctermbg
   execute "highlight GitGutterDeleteInvisible guifg=bg guibg=" . guibg . " ctermfg=" . ctermbg . " ctermbg=" . ctermbg
-  highlight default link GitGutterChangeDeleteInvisible GitGutterChangeInvisible
+  highlight default link GitGutterChangeDeleteInvisible GitGutterChangeInvisble
 
   highlight default link GitGutterAdd          GitGutterAddDefault
   highlight default link GitGutterChange       GitGutterChangeDefault
@@ -76,12 +42,12 @@ function! gitgutter#highlight#define_signs() abort
   sign define GitGutterLineModifiedRemoved
   sign define GitGutterDummy
 
-  call s:define_sign_text()
+  call gitgutter#highlight#define_sign_text()
   call gitgutter#highlight#define_sign_text_highlights()
-  call s:define_sign_line_highlights()
+  call gitgutter#highlight#define_sign_line_highlights()
 endfunction
 
-function! s:define_sign_text() abort
+function! gitgutter#highlight#define_sign_text() abort
   execute "sign define GitGutterLineAdded            text=" . g:gitgutter_sign_added
   execute "sign define GitGutterLineModified         text=" . g:gitgutter_sign_modified
   execute "sign define GitGutterLineRemoved          text=" . g:gitgutter_sign_removed
@@ -109,7 +75,7 @@ function! gitgutter#highlight#define_sign_text_highlights() abort
   endif
 endfunction
 
-function! s:define_sign_line_highlights() abort
+function! gitgutter#highlight#define_sign_line_highlights() abort
   if g:gitgutter_highlight_lines
     sign define GitGutterLineAdded            linehl=GitGutterAddLine
     sign define GitGutterLineModified         linehl=GitGutterChangeLine
@@ -125,22 +91,22 @@ function! s:define_sign_line_highlights() abort
   endif
 endfunction
 
-function! s:get_background_colors(group) abort
+function! gitgutter#highlight#get_background_colors(group) abort
   redir => highlight
   silent execute 'silent highlight ' . a:group
   redir END
 
   let link_matches = matchlist(highlight, 'links to \(\S\+\)')
   if len(link_matches) > 0 " follow the link
-    return s:get_background_colors(link_matches[1])
+    return gitgutter#highlight#get_background_colors(link_matches[1])
   endif
 
-  let ctermbg = s:match_highlight(highlight, 'ctermbg=\([0-9A-Za-z]\+\)')
-  let guibg   = s:match_highlight(highlight, 'guibg=\([#0-9A-Za-z]\+\)')
+  let ctermbg = gitgutter#highlight#match_highlight(highlight, 'ctermbg=\([0-9A-Za-z]\+\)')
+  let guibg   = gitgutter#highlight#match_highlight(highlight, 'guibg=\([#0-9A-Za-z]\+\)')
   return [guibg, ctermbg]
 endfunction
 
-function! s:match_highlight(highlight, pattern) abort
+function! gitgutter#highlight#match_highlight(highlight, pattern) abort
   let matches = matchlist(a:highlight, a:pattern)
   if len(matches) == 0
     return 'NONE'

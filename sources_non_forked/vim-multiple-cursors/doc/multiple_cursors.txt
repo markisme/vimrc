@@ -106,6 +106,16 @@ If set to 0, then pressing |g:multi_cursor_quit_key| in |insert-mode| will not
 quit and delete all existing cursors. Useful if you want to go back to Normal
 mode, and still be able to operate on all the cursors.
 
+*g:multi_cursor_insert_maps* (Default: `{}`)
+
+Any key in this map (values are ignored) will cause multi-cursor _Insert_ mode
+to pause for `timeoutlen` waiting for map completion just like normal vim.
+Otherwise keys mapped in insert mode are ignored when multiple cursors are
+active. For example, setting it to `{'\':1}` will make insert-mode mappings
+beginning with the default leader key work in multi-cursor mode. You have to
+manually set this because vim doesn't provide a way to see which keys _start_
+mappings.
+
 *g:multi_cursor_normal_maps* (Default: see below)
 
 `{'@': 1, 'F': 1, 'T': 1, '[': 1, '\': 1, ']': 1, '!': 1, '"': 1, 'c': 1, 'd': 1, 'f': 1, 'g': 1, 'm': 1, 'q': 1, 'r': 1, 't': 1, 'y': 1, 'z': 1, '<': 1, '=': 1, '>': 1}`

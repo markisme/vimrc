@@ -23,18 +23,10 @@ endfunction
 " FUNCTION: TreeDirNode.activate([options]) {{{1
 unlet s:TreeDirNode.activate
 function! s:TreeDirNode.activate(...)
-    let l:options = (a:0 > 0) ? a:1 : {}
-
-    call self.toggleOpen(l:options)
-
-    " Note that we only re-render the NERDTree for this node if we did NOT
-    " create a new node and render it in a new window or tab.  In the latter
-    " case, rendering the NERDTree for this node could overwrite the text of
-    " the new NERDTree!
-    if !has_key(l:options, 'where') || empty(l:options['where'])
-        call self.getNerdtree().render()
-        call self.putCursorHere(0, 0)
-    endif
+    let opts = a:0 ? a:1 : {}
+    call self.toggleOpen(opts)
+    call self.getNerdtree().render()
+    call self.putCursorHere(0, 0)
 endfunction
 
 " FUNCTION: TreeDirNode.addChild(treenode, inOrder) {{{1
@@ -66,10 +58,10 @@ endfunction
 " FUNCTION: TreeDirNode.closeChildren() {{{1
 " Closes all the child dir nodes of this node
 function! s:TreeDirNode.closeChildren()
-    for l:child in self.children
-        if l:child.path.isDirectory
-            call l:child.close()
-            call l:child.closeChildren()
+    for i in self.children
+        if i.path.isDirectory
+            call i.close()
+            call i.closeChildren()
         endif
     endfor
 endfunction

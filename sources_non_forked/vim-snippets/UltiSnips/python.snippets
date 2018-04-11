@@ -216,9 +216,7 @@ def write_init_body(args, parents, snip):
 
 
 def write_slots_args(args, snip):
-	quote = get_quoting_style(snip)
-	arg_format = quote + '_%s' + quote
-	args = [arg_format % arg for arg in args]
+	args = ['"_%s"' % arg for arg in args]
 	snip += '__slots__ = (%s,)' % ', '.join(args)
 
 
