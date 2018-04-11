@@ -15,24 +15,30 @@ endfunction
 
 function! s:strip_white_space(l,r,line) abort
   let [l, r] = [a:l, a:r]
-  if stridx(a:line,l) == -1 && stridx(a:line,l[0:-2]) == 0 && a:line[strlen(a:line)-strlen(r[1:]):-1] == r[1:]
-    return [l[0:-2], r[1:]]
+  if l[-1:] == ' ' && stridx(a:line,l) == -1 && stridx(a:line,l[0:-2]) == 0
+    let l = l[:-2]
+  endif
+  if r[0] == ' ' && a:line[-strlen(r):] != r && a:line[1-strlen(r):] == r[1:]
+    let r = r[1:]
   endif
   return [l, r]
 endfunction
 
-function! s:go(type,...) abort
-  if a:0
-    let [lnum1, lnum2] = [a:type, a:1]
+function! s:go(...) abort
+  if !a:0
+    let &opfunc = matchstr(expand('<sfile>'), '[^. ]*$')
+    return 'g@'
+  elseif a:0 > 1
+    let [lnum1, lnum2] = [a:1, a:2]
   else
     let [lnum1, lnum2] = [line("'["), line("']")]
   endif
 
-  let [l_, r_] = s:surroundings()
+  let [l, r] = s:surroundings()
   let uncomment = 2
   for lnum in range(lnum1,lnum2)
     let line = matchstr(getline(lnum),'\S.*\s\@<!')
-    let [l, r] = s:strip_white_space(l_,r_,line)
+    let [l, r] = s:strip_white_space(l,r,line)
     if line != '' && (stridx(line,l) || line[strlen(line)-strlen(r) : -1] != r)
       let uncomment = 0
     endif
@@ -59,17 +65,17 @@ function! s:go(type,...) abort
   finally
     let &modelines = modelines
   endtry
+  return ''
 endfunction
 
 function! s:textobject(inner) abort
-  let [l_, r_] = s:surroundings()
-  let [l, r] = [l_, r_]
+  let [l, r] = s:surroundings()
   let lnums = [line('.')+1, line('.')-2]
   for [index, dir, bound, line] in [[0, -1, 1, ''], [1, 1, line('$'), '']]
     while lnums[index] != bound && line ==# '' || !(stridx(line,l) || line[strlen(line)-strlen(r) : -1] != r)
       let lnums[index] += dir
       let line = matchstr(getline(lnums[index]+dir),'\S.*\s\@<!')
-      let [l, r] = s:strip_white_space(l_,r_,line)
+      let [l, r] = s:strip_white_space(l,r,line)
     endwhile
   endfor
   while (a:inner || lnums[1] != line('$')) && empty(getline(lnums[0]))
@@ -83,19 +89,19 @@ function! s:textobject(inner) abort
   endif
 endfunction
 
-xnoremap <silent> <Plug>Commentary     :<C-U>call <SID>go(line("'<"),line("'>"))<CR>
-nnoremap <silent> <Plug>Commentary     :<C-U>set opfunc=<SID>go<CR>g@
-nnoremap <silent> <Plug>CommentaryLine :<C-U>set opfunc=<SID>go<Bar>exe 'norm! 'v:count1.'g@_'<CR>
+command! -range -bar Commentary call s:go(<line1>,<line2>)
+xnoremap <silent> <Plug>Commentary     :Commentary<CR>
+nnoremap <expr>   <Plug>Commentary     <SID>go()
+nnoremap <expr>   <Plug>CommentaryLine <SID>go() . '_'
 onoremap <silent> <Plug>Commentary        :<C-U>call <SID>textobject(0)<CR>
 nnoremap <silent> <Plug>ChangeCommentary c:<C-U>call <SID>textobject(1)<CR>
 nmap <silent> <Plug>CommentaryUndo <Plug>Commentary<Plug>Commentary
-command! -range -bar Commentary call s:go(<line1>,<line2>)
 
 if !hasmapto('<Plug>Commentary') || maparg('gc','n') ==# ''
   xmap gc  <Plug>Commentary
   nmap gc  <Plug>Commentary
   omap gc  <Plug>Commentary
-  nmap gcc <Plug>CommentaryLine
+  nmap gcc <Plug>Commentary_
   if maparg('c','n') ==# ''
     nmap cgc <Plug>ChangeCommentary
   endif
