@@ -93,6 +93,10 @@ function! ctrlp#decls#enter() abort
     return
   endif
 
+  if exists("l:tmpname")
+    call delete(l:tmpname)
+  endif
+
   let result = eval(out)
   if type(result) != 4 || !has_key(result, 'decls')
     return

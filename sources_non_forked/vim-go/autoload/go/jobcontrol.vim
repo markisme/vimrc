@@ -9,11 +9,11 @@ let s:handlers = {}
 " Spawn is a wrapper around s:spawn. It can be executed by other files and
 " scripts if needed. Desc defines the description for printing the status
 " during the job execution (useful for statusline integration).
-function! go#jobcontrol#Spawn(bang, desc, for, args) abort
+function! go#jobcontrol#Spawn(bang, desc, args) abort
   " autowrite is not enabled for jobs
   call go#cmd#autowrite()
 
-  let job = s:spawn(a:bang, a:desc, a:for, a:args)
+  let job = s:spawn(a:bang, a:desc, a:args)
   return job.id
 endfunction
 
@@ -33,10 +33,11 @@ function! go#jobcontrol#RemoveHandler(id) abort
   unlet s:handlers[a:id]
 endfunction
 
-" spawn spawns a go subcommand with the name and arguments with jobstart. Once a
-" job is started a reference will be stored inside s:jobs. The job is started
-" inside the current files folder.
-function! s:spawn(bang, desc, for, args) abort
+" spawn spawns a go subcommand with the name and arguments with jobstart. Once
+" a job is started a reference will be stored inside s:jobs. spawn changes the
+" GOPATH when g:go_autodetect_gopath is enabled. The job is started inside the
+" current files folder.
+function! s:spawn(bang, desc, args) abort
   let status_type = a:args[0]
   let status_dir = expand('%:p:h')
   let started_at = reltime()
@@ -61,9 +62,11 @@ function! s:spawn(bang, desc, for, args) abort
         \ 'status_type' : status_type,
         \ 'status_dir' : status_dir,
         \ 'started_at' : started_at,
-        \ 'for' : a:for,
-        \ 'errorformat': &errorformat,
         \ }
+
+  " modify GOPATH if needed
+  let old_gopath = $GOPATH
+  let $GOPATH = go#path#Detect()
 
   " execute go build in the files directory
   let cd = exists('*haslocaldir') && haslocaldir() ? 'lcd ' : 'cd '
@@ -89,6 +92,9 @@ function! s:spawn(bang, desc, for, args) abort
   let s:jobs[id] = job
 
   execute cd . fnameescape(dir)
+
+  " restore back GOPATH
+  let $GOPATH = old_gopath
 
   return job
 endfunction
@@ -123,9 +129,10 @@ function! s:on_exit(job_id, exit_status, event) dict abort
 
   call s:callback_handlers_on_exit(s:jobs[a:job_id], a:exit_status, std_combined)
 
-  let l:listtype = go#list#Type(self.for)
+  let l:listtype = go#list#Type("quickfix")
   if a:exit_status == 0
     call go#list#Clean(l:listtype)
+    call go#list#Window(l:listtype)
 
     let self.state = "SUCCESS"
 
@@ -143,9 +150,8 @@ function! s:on_exit(job_id, exit_status, event) dict abort
     call go#util#EchoError("[" . self.status_type . "] FAILED")
   endif
 
-  " parse the errors relative to self.jobdir
-  call go#list#ParseFormat(l:listtype, self.errorformat, std_combined, self.for)
-  let errors = go#list#Get(l:listtype)
+  let errors = go#tool#ParseErrors(std_combined)
+  let errors = go#tool#FilterValids(errors)
 
   execute cd . fnameescape(dir)
 
@@ -157,6 +163,7 @@ function! s:on_exit(job_id, exit_status, event) dict abort
 
   " if we are still in the same windows show the list
   if self.winnr == winnr()
+    call go#list#Populate(l:listtype, errors, self.desc)
     call go#list#Window(l:listtype, len(errors))
     if !empty(errors) && !self.bang
       call go#list#JumpToFirst(l:listtype)

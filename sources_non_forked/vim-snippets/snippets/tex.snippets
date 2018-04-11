@@ -209,8 +209,6 @@ snippet bf bold face text
 	\\textbf{${1:${VISUAL:text}}} ${0}
 snippet under underline text
 	\\underline{${1:${VISUAL:text}}} ${0}
-snippet over overline text
-	\\overline{${1:${VISUAL:text}}} ${0}
 snippet emp emphasize text
 	\\emph{${1:${VISUAL:text}}} ${0}
 snippet sc small caps text
@@ -292,9 +290,7 @@ snippet block block environment
 	\\begin{block}{${1:title}}
 		${0:${VISUAL}}
 	\\end{block}
-snippet alert alert text
-	\\alert{${1:${VISUAL:text}}} ${0}
-snippet alertblock alertblock environment
+snippet alert alertblock environment
 	\\begin{alertblock}{${1:title}}
 		${0:${VISUAL}}
 	\\end{alertblock}
@@ -311,12 +307,6 @@ snippet col2 two-column environment
 			${0}
 		\\end{column}
 	\\end{columns}
-snippet multicol2 two-column environment with multicol
-	\\begin{multicols}{2}
-		${1}
-		\columnbreak
-		${0}
-	\\end{multicols}
 snippet \{ \{ \}
 	\\{ ${0} \\}
 #delimiter
@@ -349,6 +339,3 @@ snippet urlc
 	\\url{`@+`} ${0}
 snippet hrefc
 	\\href{`@+`}{${1}} ${0}
-# enquote from package csquotes
-snippet enq enquote
-	\\enquote{${1:${VISUAL:text}}} ${0}

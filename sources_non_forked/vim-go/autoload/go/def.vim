@@ -2,6 +2,9 @@ let s:go_stack = []
 let s:go_stack_level = 0
 
 function! go#def#Jump(mode) abort
+  let old_gopath = $GOPATH
+  let $GOPATH = go#path#Detect()
+
   let fname = fnamemodify(expand("%"), ':p:gs?\\?/?')
 
   " so guru right now is slow for some people. previously we were using
@@ -19,10 +22,10 @@ function! go#def#Jump(mode) abort
 
     let bin_path = go#path#CheckBinPath("godef")
     if empty(bin_path)
+      let $GOPATH = old_gopath
       return
     endif
-    let command = printf("%s -f=%s -o=%s -t", go#util#Shellescape(bin_path),
-      \ go#util#Shellescape(fname), go#util#OffsetCursor())
+    let command = printf("%s -f=%s -o=%s -t", bin_path, fname, go#util#OffsetCursor())
     let out = go#util#System(command)
     if exists("l:tmpname")
       call delete(l:tmpname)
@@ -30,6 +33,7 @@ function! go#def#Jump(mode) abort
   elseif bin_name == 'guru'
     let bin_path = go#path#CheckBinPath("guru")
     if empty(bin_path)
+      let $GOPATH = old_gopath
       return
     endif
 
@@ -53,7 +57,7 @@ function! go#def#Jump(mode) abort
     if go#util#has_job()
       let l:spawn_args = {
             \ 'cmd': cmd,
-            \ 'complete': function('s:jump_to_declaration_cb', [a:mode, bin_name]),
+            \ 'custom_cb': function('s:jump_to_declaration_cb', [a:mode, bin_name]),
             \ }
 
       if &modified
@@ -83,6 +87,7 @@ function! go#def#Jump(mode) abort
   endif
 
   call go#def#jump_to_declaration(out, a:mode, bin_name)
+  let $GOPATH = old_gopath
 endfunction
 
 function! s:jump_to_declaration_cb(mode, bin_name, job, exit_status, data) abort
@@ -91,7 +96,6 @@ function! s:jump_to_declaration_cb(mode, bin_name, job, exit_status, data) abort
   endif
 
   call go#def#jump_to_declaration(a:data[0], a:mode, a:bin_name)
-  call go#util#EchoSuccess(fnamemodify(a:data[0], ":t"))
 endfunction
 
 function! go#def#jump_to_declaration(out, mode, bin_name) abort
@@ -149,11 +153,9 @@ function! go#def#jump_to_declaration(out, mode, bin_name) abort
       endif
 
       if a:mode == "tab"
-        let &switchbuf = "useopen,usetab,newtab"
+        let &switchbuf = "usetab"
         if bufloaded(filename) == 0
           tab split
-        else
-           let cmd = 'sbuf'
         endif
       elseif a:mode == "split"
         split
@@ -162,7 +164,7 @@ function! go#def#jump_to_declaration(out, mode, bin_name) abort
       endif
 
       " open the file and jump to line and column
-      exec cmd fnameescape(fnamemodify(filename, ':.'))
+      exec cmd filename
     endif
   endif
   call cursor(line, col)
@@ -292,12 +294,16 @@ function! go#def#Stack(...) abort
 endfunction
 
 function s:def_job(args) abort
+  function! s:error_info_cb(job, exit_status, data) closure
+    " do not print anything during async definition search&jump
+  endfunction
+
+  let a:args.error_info_cb = funcref('s:error_info_cb')
   let callbacks = go#job#Spawn(a:args)
 
   let start_options = {
         \ 'callback': callbacks.callback,
         \ 'exit_cb': callbacks.exit_cb,
-        \ 'close_cb': callbacks.close_cb,
         \ }
 
   if &modified

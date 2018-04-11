@@ -4,10 +4,10 @@
 "
 " compiler/go.vim: Vim compiler file for Go.
 
-if exists("g:current_compiler")
+if exists("current_compiler")
   finish
 endif
-let g:current_compiler = "go"
+let current_compiler = "go"
 
 if exists(":CompilerSet") != 2
   command -nargs=* CompilerSet setlocal <args>

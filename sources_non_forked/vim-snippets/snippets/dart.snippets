@@ -1,15 +1,14 @@
 snippet lib
-	library ${1};
+	#library('${1}');
 	${0}
 snippet im
-	import 'package:${1}/${2}.dart';
+	#import('${1}');
 	${0}
-snippet rgx
-	new RegExp(r'${1}')
-snippet var
-	var ${1} = ${2};
+snippet so
+	#source('${1}');
+	${0}
 snippet main
-	main() {
+	static void main() {
 	  ${0}
 	}
 snippet st

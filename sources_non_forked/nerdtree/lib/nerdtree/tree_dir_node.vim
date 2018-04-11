@@ -21,19 +21,12 @@ function! s:TreeDirNode.AbsoluteTreeRoot()
 endfunction
 
 " FUNCTION: TreeDirNode.activate([options]) {{{1
+unlet s:TreeDirNode.activate
 function! s:TreeDirNode.activate(...)
-    let l:options = (a:0 > 0) ? a:1 : {}
-
-    call self.toggleOpen(l:options)
-
-    " Note that we only re-render the NERDTree for this node if we did NOT
-    " create a new node and render it in a new window or tab.  In the latter
-    " case, rendering the NERDTree for this node could overwrite the text of
-    " the new NERDTree!
-    if !has_key(l:options, 'where') || empty(l:options['where'])
-        call self.getNerdtree().render()
-        call self.putCursorHere(0, 0)
-    endif
+    let opts = a:0 ? a:1 : {}
+    call self.toggleOpen(opts)
+    call self.getNerdtree().render()
+    call self.putCursorHere(0, 0)
 endfunction
 
 " FUNCTION: TreeDirNode.addChild(treenode, inOrder) {{{1
@@ -63,16 +56,12 @@ function! s:TreeDirNode.close()
 endfunction
 
 " FUNCTION: TreeDirNode.closeChildren() {{{1
-<<<<<<< HEAD
 " Closes all the child dir nodes of this node
-=======
-" Recursively close any directory nodes that are descendants of this node.
->>>>>>> upstream/master
 function! s:TreeDirNode.closeChildren()
-    for l:child in self.children
-        if l:child.path.isDirectory
-            call l:child.close()
-            call l:child.closeChildren()
+    for i in self.children
+        if i.path.isDirectory
+            call i.close()
+            call i.closeChildren()
         endif
     endfor
 endfunction
@@ -231,7 +220,6 @@ function! s:TreeDirNode.getChildIndex(path)
     return -1
 endfunction
 
-<<<<<<< HEAD
 " FUNCTION: TreeDirNode.getDirChildren() {{{1
 " Return a list of all child nodes from "self.children" that are of type
 " TreeDirNode.
@@ -311,80 +299,6 @@ function! s:TreeDirNode._glob(pattern, all)
     return l:globList
 endfunction
 
-=======
-" FUNCTION: TreeDirNode._glob(pattern, all) {{{1
-" Return a list of strings naming the descendants of the directory in this
-" TreeDirNode object that match the specified glob pattern.
-"
-" Args:
-" pattern: (string) the glob pattern to apply
-" all: (0 or 1) if 1, include "." and ".." if they match "pattern"; if 0,
-"      always exclude them
-"
-" Note: If the pathnames in the result list are below the working directory,
-" they are returned as pathnames relative to that directory. This is because
-" this function, internally, attempts to obey 'wildignore' rules that use
-" relative paths.
-function! s:TreeDirNode._glob(pattern, all)
-
-    " Construct a path specification such that "globpath()" will return
-    " relative pathnames, if possible.
-    if self.path.str() == getcwd()
-        let l:pathSpec = ','
-    else
-        let l:pathSpec = fnamemodify(self.path.str({'format': 'Glob'}), ':.')
-
-        " On Windows, the drive letter may be removed by "fnamemodify()".
-        if nerdtree#runningWindows() && l:pathSpec[0] == g:NERDTreePath.Slash()
-            let l:pathSpec = self.path.drive . l:pathSpec
-        endif
-    endif
-
-    let l:globList = []
-
-    " See ":h version7.txt" and ":h version8.txt" for details on the
-    " development of the "glob()" and "globpath()" functions.
-    if v:version > 704 || (v:version == 704 && has('patch654'))
-        let l:globList = globpath(l:pathSpec, a:pattern, !g:NERDTreeRespectWildIgnore, 1, 0)
-    elseif v:version == 704 && has('patch279')
-        let l:globList = globpath(l:pathSpec, a:pattern, !g:NERDTreeRespectWildIgnore, 1)
-    elseif v:version > 702 || (v:version == 702 && has('patch051'))
-        let l:globString = globpath(l:pathSpec, a:pattern, !g:NERDTreeRespectWildIgnore)
-        let l:globList = split(l:globString, "\n")
-    else
-        let l:globString = globpath(l:pathSpec, a:pattern)
-        let l:globList = split(l:globString, "\n")
-    endif
-
-    " If "a:all" is false, filter "." and ".." from the output.
-    if !a:all
-        let l:toRemove = []
-
-        for l:file in l:globList
-            let l:tail = fnamemodify(l:file, ':t')
-
-            " Double the modifier if only a separator was stripped.
-            if l:tail == ''
-                let l:tail = fnamemodify(l:file, ':t:t')
-            endif
-
-            if l:tail == '.' || l:tail == '..'
-                call add(l:toRemove, l:file)
-                if len(l:toRemove) == 2
-                    break
-                endif
-            endif
-        endfor
-
-        for l:file in l:toRemove
-            call remove(l:globList, index(l:globList, l:file))
-        endfor
-    endif
-
-    return l:globList
-endfunction
-
->>>>>>> upstream/master
 " FUNCTION: TreeDirNode.GetSelected() {{{1
 " Returns the current node if it is a dir node, or else returns the current
 " nodes parent

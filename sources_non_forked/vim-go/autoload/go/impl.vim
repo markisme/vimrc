@@ -1,23 +1,27 @@
 function! go#impl#Impl(...) abort
+  let binpath = go#path#CheckBinPath('impl')
+  if empty(binpath)
+    return
+  endif
+
   let recv = ""
   let iface = ""
-  let interactive = 0
 
-  let pos = getpos('.')
-
-  if a:0 is 0
-    " Interactive mode if user didn't pass any arguments.
-    let recv = s:getReceiver()
+  if a:0 == 0
+    " user didn't passed anything,  just called ':GoImpl'
+    let receiveType = expand("<cword>")
+    let recv = printf("%s *%s", tolower(receiveType)[0], receiveType)
     let iface = input("vim-go: generating method stubs for interface: ")
     redraw!
     if empty(iface)
       call go#util#EchoError('usage: interface type is not provided')
       return
     endif
-  elseif a:0 is 1
+  elseif a:0 == 1
     " we assume the user only passed the interface type,
     " i.e: ':GoImpl io.Writer'
-    let recv = s:getReceiver()
+    let receiveType = expand("<cword>")
+    let recv = printf("%s *%s", tolower(receiveType)[0], receiveType)
     let iface = a:1
   elseif a:0 > 2
     " user passed receiver and interface type both,
@@ -29,41 +33,20 @@ function! go#impl#Impl(...) abort
     return
   endif
 
-  " Make sure we put the generated code *after* the struct.
-  if getline(".") =~ "struct "
-    normal! $%
+  let result = go#util#System(printf("%s '%s' '%s'", binpath, recv, iface))
+  if go#util#ShellError() != 0
+    call go#util#EchoError(result)
+    return
   endif
 
-  try
-    let dirname = fnameescape(expand('%:p:h'))
-    let [result, err] = go#util#Exec(['impl', '-dir', dirname, recv, iface])
-    let result = substitute(result, "\n*$", "", "")
-    if err
-      call go#util#EchoError(result)
-      return
-    endif
+  if result ==# ''
+    return
+  end
 
-    if result is# ''
-      return
-    end
-
-    put =''
-    silent put =result
-  finally
-    call setpos('.', pos)
-  endtry
-endfunction
-
-function! s:getReceiver()
-  let receiveType = expand("<cword>")
-  if receiveType == "type"
-    normal! w
-    let receiveType = expand("<cword>")
-  elseif receiveType == "struct"
-    normal! ge
-    let receiveType = expand("<cword>")
-  endif
-  return printf("%s *%s", tolower(receiveType)[0], receiveType)
+  let pos = getpos('.')
+  put =''
+  put =result
+  call setpos('.', pos)
 endfunction
 
 if exists('*uniq')
@@ -94,6 +77,10 @@ function! s:root_dirs() abort
   endif
 
   let paths = map(split(go#util#env("gopath"), go#util#PathListSep()), "substitute(v:val, '\\\\', '/', 'g')")
+  if go#util#ShellError()
+    return []
+  endif
+
   if !empty(filter(paths, 'isdirectory(v:val)'))
     call extend(dirs, paths)
   endif
@@ -111,12 +98,11 @@ function! s:go_packages(dirs) abort
 endfunction
 
 function! s:interface_list(pkg) abort
-  let [contents, err] = go#util#Exec(['go', 'doc', a:pkg])
-  if err
+  let contents = split(go#util#System('go doc ' . a:pkg), "\n")
+  if go#util#ShellError()
     return []
   endif
 
-  let contents = split(contents, "\n")
   call filter(contents, 'v:val =~# ''^type\s\+\h\w*\s\+interface''')
   return map(contents, 'a:pkg . "." . matchstr(v:val, ''^type\s\+\zs\h\w*\ze\s\+interface'')')
 endfunction

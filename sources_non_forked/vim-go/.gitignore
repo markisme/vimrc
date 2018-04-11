@@ -1,5 +1,7 @@
+doc/tags
 .DS_Store
-/doc/tags
-/.coverage.covimerage
-/coverage.xml
-*.pyc
+
+# Test specific files
+FAILED
+test.log
+scripts/vim-vimhelplint
